@@ -24,14 +24,16 @@ export function Navbar() {
 
   const isActive = (path: string) => {
     if (path === '/') {
-      return currentPath === '/' || currentPath.startsWith('/tasks');
+      return currentPath === '/';
     }
     return currentPath.startsWith(path);
   };
 
   const getNavLinks = () => {
     const baseLinks = [
-      { href: '/', label: 'Каталог задач' },
+      { href: '/', label: 'Главная' },
+      { href: '/tasks/seller', label: 'Задачи продавцов' },
+      { href: '/tasks/executor', label: 'Услуги исполнителей' },
     ];
 
     if (!isAuthenticated) return baseLinks;
