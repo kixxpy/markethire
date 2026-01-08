@@ -1,0 +1,690 @@
+import { prisma } from "../lib/prisma";
+import { CreateTaskInput, UpdateTaskInput, TaskFiltersInput } from "../lib/validation";
+import { Marketplace, TaskStatus, BudgetType } from "@prisma/client";
+
+export interface TaskWithRelations {
+  id: string;
+  userId: string;
+  marketplace: Marketplace;
+  categoryId: string;
+  title: string;
+  description: string;
+  budget: number | null;
+  budgetType: BudgetType;
+  status: TaskStatus;
+  createdAt: Date;
+  user: {
+    id: string;
+    username: string | null;
+    name: string | null;
+    email: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
+  tags: Array<{
+    id: string;
+    name: string;
+  }>;
+  _count: {
+    responses: number;
+  };
+}
+
+export interface PaginatedTasks {
+  tasks: TaskWithRelations[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * Создание новой задачи
+ */
+export async function createTask(
+  userId: string,
+  data: CreateTaskInput
+) {
+  // Проверка существования категории
+  const category = await prisma.category.findUnique({
+    where: { id: data.categoryId },
+  });
+
+  if (!category) {
+    throw new Error("Категория не найдена");
+  }
+
+  // Проверка существования тегов, если они указаны
+  if (data.tagIds && data.tagIds.length > 0) {
+    const tags = await prisma.tag.findMany({
+      where: {
+        id: { in: data.tagIds },
+        categoryId: data.categoryId,
+      },
+    });
+
+    if (tags.length !== data.tagIds.length) {
+      throw new Error("Один или несколько тегов не найдены или не принадлежат категории");
+    }
+  }
+
+  // Создание задачи
+  const task = await prisma.task.create({
+    data: {
+      userId,
+      marketplace: data.marketplace,
+      categoryId: data.categoryId,
+      title: data.title,
+      description: data.description,
+      budget: data.budget ?? null,
+      budgetType: data.budgetType,
+      tags: data.tagIds && data.tagIds.length > 0 ? {
+        create: data.tagIds.map(tagId => ({ tagId })),
+      } : undefined,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  return {
+    ...task,
+    tags: task.tags.map(tt => tt.tag),
+  };
+}
+
+/**
+ * Получение списка задач с фильтрацией и пагинацией
+ */
+export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTasks> {
+  const {
+    categoryId,
+    tagIds,
+    marketplace,
+    status,
+    budgetMin,
+    budgetMax,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+  } = filters;
+
+  const skip = (page - 1) * limit;
+
+  // Построение условий фильтрации
+  const where: any = {};
+
+  if (categoryId) {
+    where.categoryId = categoryId;
+  }
+
+  if (marketplace) {
+    where.marketplace = marketplace;
+  }
+
+  if (status) {
+    where.status = status;
+  }
+
+  if (budgetMin !== undefined || budgetMax !== undefined) {
+    where.budget = {};
+    if (budgetMin !== undefined) {
+      where.budget.gte = budgetMin;
+    }
+    if (budgetMax !== undefined) {
+      where.budget.lte = budgetMax;
+    }
+  }
+
+  // Фильтрация по тегам
+  if (tagIds && tagIds.length > 0) {
+    where.tags = {
+      some: {
+        tagId: { in: tagIds },
+      },
+    };
+  }
+
+  // Подсчет общего количества
+  const total = await prisma.task.count({ where });
+
+  // Получение задач
+  const tasks = await prisma.task.findMany({
+    where,
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  return {
+    tasks: tasks.map(task => ({
+      ...task,
+      tags: task.tags.map(tt => tt.tag),
+    })) as TaskWithRelations[],
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+/**
+ * Получение задачи по ID
+ */
+export async function getTaskById(taskId: string): Promise<TaskWithRelations | null> {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  if (!task) {
+    return null;
+  }
+
+  return {
+    ...task,
+    tags: task.tags.map(tt => tt.tag),
+  };
+}
+
+/**
+ * Обновление задачи
+ */
+export async function updateTask(
+  taskId: string,
+  userId: string,
+  data: UpdateTaskInput
+) {
+  // Проверка существования задачи и прав доступа
+  const existingTask = await prisma.task.findUnique({
+    where: { id: taskId },
+  });
+
+  if (!existingTask) {
+    throw new Error("Задача не найдена");
+  }
+
+  if (existingTask.userId !== userId) {
+    throw new Error("Недостаточно прав для обновления задачи");
+  }
+
+  // Проверка категории, если она обновляется
+  if (data.categoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+    });
+
+    if (!category) {
+      throw new Error("Категория не найдена");
+    }
+  }
+
+  // Проверка тегов, если они обновляются
+  if (data.tagIds !== undefined) {
+    const categoryId = data.categoryId || existingTask.categoryId;
+    if (data.tagIds.length > 0) {
+      const tags = await prisma.tag.findMany({
+        where: {
+          id: { in: data.tagIds },
+          categoryId,
+        },
+      });
+
+      if (tags.length !== data.tagIds.length) {
+        throw new Error("Один или несколько тегов не найдены или не принадлежат категории");
+      }
+    }
+  }
+
+  // Обновление задачи
+  const updateData: any = {};
+
+  if (data.marketplace !== undefined) {
+    updateData.marketplace = data.marketplace;
+  }
+
+  if (data.categoryId !== undefined) {
+    updateData.categoryId = data.categoryId;
+  }
+
+  if (data.title !== undefined) {
+    updateData.title = data.title;
+  }
+
+  if (data.description !== undefined) {
+    updateData.description = data.description;
+  }
+
+  if (data.budget !== undefined) {
+    updateData.budget = data.budget;
+  }
+
+  if (data.budgetType !== undefined) {
+    updateData.budgetType = data.budgetType;
+  }
+
+  // Обновление тегов
+  if (data.tagIds !== undefined) {
+    // Удаляем все существующие связи
+    await prisma.taskTag.deleteMany({
+      where: { taskId },
+    });
+
+    // Создаем новые связи
+    if (data.tagIds.length > 0) {
+      await prisma.taskTag.createMany({
+        data: data.tagIds.map(tagId => ({
+          taskId,
+          tagId,
+        })),
+      });
+    }
+  }
+
+  const task = await prisma.task.update({
+    where: { id: taskId },
+    data: updateData,
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  return {
+    ...task,
+    tags: task.tags.map(tt => tt.tag),
+  };
+}
+
+/**
+ * Удаление задачи
+ */
+export async function deleteTask(taskId: string, userId: string) {
+  // Проверка существования задачи и прав доступа
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+  });
+
+  if (!task) {
+    throw new Error("Задача не найдена");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Недостаточно прав для удаления задачи");
+  }
+
+  await prisma.task.delete({
+    where: { id: taskId },
+  });
+}
+
+/**
+ * Закрытие задачи
+ */
+export async function closeTask(taskId: string, userId: string) {
+  // Проверка существования задачи и прав доступа
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+  });
+
+  if (!task) {
+    throw new Error("Задача не найдена");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Недостаточно прав для закрытия задачи");
+  }
+
+  if (task.status === "CLOSED") {
+    throw new Error("Задача уже закрыта");
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: { status: "CLOSED" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      responses: {
+        select: {
+          userId: true,
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  // Создание уведомлений для исполнителей, которые откликнулись на задачу
+  try {
+    const { createNotification } = await import('./notification.service');
+    const uniqueUserIds = [...new Set(updatedTask.responses.map(r => r.userId))];
+    
+    await Promise.all(
+      uniqueUserIds.map(userId =>
+        createNotification({
+          userId,
+          type: 'TASK_CLOSED',
+          role: 'PERFORMER',
+          title: 'Задача закрыта',
+          message: `Задача "${updatedTask.title}" была закрыта заказчиком`,
+          link: `/tasks/${taskId}`,
+        }).catch(err => {
+          console.error(`Ошибка создания уведомления для пользователя ${userId}:`, err);
+        })
+      )
+    );
+  } catch (error) {
+    console.error('Ошибка создания уведомлений:', error);
+    // Не прерываем выполнение, если уведомления не создались
+  }
+
+  return {
+    ...updatedTask,
+    tags: updatedTask.tags.map(tt => tt.tag),
+  };
+}
+
+/**
+ * Получение задач пользователя
+ */
+export async function getMyTasks(
+  userId: string,
+  filters: Omit<TaskFiltersInput, "page" | "limit"> & { page?: number; limit?: number }
+): Promise<PaginatedTasks> {
+  const {
+    categoryId,
+    tagIds,
+    marketplace,
+    status,
+    budgetMin,
+    budgetMax,
+    sortBy,
+    sortOrder,
+    page = 1,
+    limit = 20,
+  } = filters;
+
+  const skip = (page - 1) * limit;
+
+  // Построение условий фильтрации
+  const where: any = {
+    userId,
+  };
+
+  if (categoryId) {
+    where.categoryId = categoryId;
+  }
+
+  if (marketplace) {
+    where.marketplace = marketplace;
+  }
+
+  if (status) {
+    where.status = status;
+  }
+
+  if (budgetMin !== undefined || budgetMax !== undefined) {
+    where.budget = {};
+    if (budgetMin !== undefined) {
+      where.budget.gte = budgetMin;
+    }
+    if (budgetMax !== undefined) {
+      where.budget.lte = budgetMax;
+    }
+  }
+
+  // Фильтрация по тегам
+  if (tagIds && tagIds.length > 0) {
+    where.tags = {
+      some: {
+        tagId: { in: tagIds },
+      },
+    };
+  }
+
+  // Подсчет общего количества
+  const total = await prisma.task.count({ where });
+
+  // Получение задач
+  const tasks = await prisma.task.findMany({
+    where,
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  return {
+    tasks: tasks.map(task => ({
+      ...task,
+      tags: task.tags.map(tt => tt.tag),
+    })) as TaskWithRelations[],
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+/**
+ * Получение откликов на задачу
+ */
+export async function getTaskResponses(taskId: string, userId?: string) {
+  // Проверка существования задачи
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+  });
+
+  if (!task) {
+    throw new Error("Задача не найдена");
+  }
+
+  // Проверка прав доступа (только владелец задачи может видеть отклики)
+  if (!userId) {
+    throw new Error("Необходима авторизация для просмотра откликов");
+  }
+
+  if (task.userId !== userId) {
+    throw new Error("Недостаточно прав для просмотра откликов");
+  }
+
+  const responses = await prisma.response.findMany({
+    where: { taskId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+          description: true,
+          priceFrom: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return responses;
+}

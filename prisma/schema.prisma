@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Marketplace {
+  WB
+  OZON
+}
+
+enum BudgetType {
+  FIXED
+  NEGOTIABLE
+}
+
+enum TaskStatus {
+  OPEN
+  CLOSED
+}
+
+enum UserRole {
+  SELLER
+  PERFORMER
+  BOTH
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  username      String      @unique
+  email         String      @unique
+  password      String?
+  role          UserRole    @default(BOTH)
+  createdAt     DateTime    @default(now())
+  avatarUrl     String?
+
+  // Контакты
+  telegram      String?
+  whatsapp      String?
+  emailContact  String?
+
+  // Исполнитель
+  description   String?
+  priceFrom     Int?
+
+  tasks         Task[]
+  responses     Response[]
+  tags          UserTag[]
+  notifications Notification[]
+}
+
+model Task {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+
+  marketplace  Marketplace
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id])
+
+  title        String
+  description  String
+  budget       Int?
+  budgetType   BudgetType    @default(FIXED)
+  status       TaskStatus    @default(OPEN)
+
+  responses    Response[]
+  tags         TaskTag[]
+
+  createdAt    DateTime      @default(now())
+}
+
+model Response {
+  id         String    @id @default(cuid())
+  taskId    String
+  userId    String
+
+  task       Task     @relation(fields: [taskId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  message    String
+  price      Int?
+  deadline   String?
+
+  createdAt  DateTime @default(now())
+}
+
+model Category {
+  id    String  @id @default(cuid())
+  name  String  @unique
+
+  tags  Tag[]
+  tasks Task[]
+}
+
+model Tag {
+  id          String   @id @default(cuid())
+  name        String
+  categoryId String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  tasks       TaskTag[]
+  users       UserTag[]
+
+  @@unique([name, categoryId])
+}
+
+model TaskTag {
+  taskId String
+  tagId  String
+
+  task   Task @relation(fields: [taskId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([taskId, tagId])
+}
+
+model UserTag {
+  userId String
+  tagId  String
+
+  user   User @relation(fields: [userId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([userId, tagId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // 'NEW_RESPONSE', 'TASK_CLOSED', 'TASK_ACCEPTED', etc.
+  role      UserRole // Для фильтрации по роли
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?  // URL для перехода
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, role])
+}
