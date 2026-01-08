@@ -148,3 +148,54 @@ export function generateAvatarFilename(userId: string, extension: string): strin
   const timestamp = Date.now();
   return `${userId}-${timestamp}${extension}`;
 }
+
+/**
+ * Валидация файла изображения задачи
+ */
+export function validateTaskImageFile(file: File): FileValidationResult {
+  // Проверка типа файла
+  if (!file.mimetype) {
+    return {
+      valid: false,
+      error: "Недопустимый тип файла. Разрешены только: jpg, jpeg, png, webp",
+    };
+  }
+
+  const allowedTypes = ALLOWED_MIME_TYPES as readonly string[];
+  if (!allowedTypes.includes(file.mimetype)) {
+    return {
+      valid: false,
+      error: "Недопустимый тип файла. Разрешены только: jpg, jpeg, png, webp",
+    };
+  }
+
+  // Проверка размера файла
+  if (file.size && file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: "Размер файла превышает 5MB",
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Генерация уникального имени файла для изображения задачи
+ */
+export function generateTaskImageFilename(taskId: string, index: number, extension: string): string {
+  const timestamp = Date.now();
+  return `${taskId}-${index}-${timestamp}${extension}`;
+}
+
+/**
+ * Удаление изображений задачи
+ */
+export function deleteTaskImages(imageUrls: string[]): void {
+  imageUrls.forEach((url) => {
+    if (url.startsWith("/uploads/tasks/")) {
+      const imagePath = path.join(process.cwd(), "public", url);
+      deleteFile(imagePath);
+    }
+  });
+}

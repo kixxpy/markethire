@@ -12,6 +12,7 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
+import TaskImageUpload from './TaskImageUpload';
 
 type TaskFormData = {
   marketplace: 'WB' | 'OZON';
@@ -21,6 +22,7 @@ type TaskFormData = {
   budget?: number;
   budgetType: 'FIXED' | 'NEGOTIABLE';
   tagIds?: string[];
+  images?: string[];
 };
 
 interface TaskFormProps {
@@ -31,6 +33,7 @@ interface TaskFormProps {
 export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
   const router = useRouter();
   const { activeMode } = useAuthStore();
 
@@ -39,6 +42,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
     defaultValues: {
       budgetType: 'FIXED',
       tagIds: [],
+      images: [],
       ...initialData,
     },
   });
@@ -58,6 +62,11 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
       form.setValue('tagIds', []);
     }
   }, [selectedCategoryId, form]);
+
+  // Синхронизация images с формой
+  useEffect(() => {
+    form.setValue('images', images);
+  }, [images, form]);
 
   const loadCategories = async () => {
     try {
@@ -87,16 +96,90 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const onSubmit = async (data: TaskFormData) => {
     try {
       if (taskId) {
-        await api.patch(`/api/tasks/${taskId}`, data);
+        // При обновлении: разделяем изображения на загруженные и новые
+        const uploadedImages = images.filter(img => img.startsWith('/uploads/tasks/'));
+        const newImages = images.filter(img => img.startsWith('data:'));
+
+        // Загружаем новые изображения, если они есть
+        if (newImages.length > 0) {
+          const formData = new FormData();
+          
+          for (let i = 0; i < newImages.length; i++) {
+            const imageUrl = newImages[i];
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
+            formData.append('images', file);
+          }
+
+          try {
+            const uploadResponse = await api.post<{ images: string[] }>(`/api/tasks/${taskId}/images`, formData);
+            // Используем полный список изображений из ответа API
+            const allImages = uploadResponse.images;
+            
+            // Обновляем задачу с полным списком изображений
+            await api.patch(`/api/tasks/${taskId}`, {
+              ...data,
+              images: allImages,
+            });
+          } catch (error) {
+            console.error('Ошибка загрузки изображений:', error);
+            // Обновляем задачу без новых изображений
+            await api.patch(`/api/tasks/${taskId}`, {
+              ...data,
+              images: uploadedImages,
+            });
+            toast.warning('Задача обновлена, но не все изображения загружены');
+            return;
+          }
+        } else {
+          // Если новых изображений нет, просто обновляем задачу со всеми изображениями
+          await api.patch(`/api/tasks/${taskId}`, {
+            ...data,
+            images: images, // Используем все изображения (могут быть удалены некоторые)
+          });
+        }
+        
         toast.success('Задача обновлена');
       } else {
-        // Передаем activeMode при создании
-        await api.post('/api/tasks', {
+        // При создании: создаем задачу, затем загружаем изображения
+        const response = await api.post<{ task: { id: string } }>('/api/tasks', {
           ...data,
           createdInMode: activeMode || 'SELLER',
+          images: [], // Сначала создаем без изображений
         });
+
+        const newTaskId = response.task.id;
+
+        // Загружаем изображения, если они есть
+        if (images.length > 0) {
+          const formData = new FormData();
+          
+          // Конвертируем data URL в файлы для загрузки
+          for (let i = 0; i < images.length; i++) {
+            const imageUrl = images[i];
+            if (imageUrl.startsWith('data:')) {
+              // Это локальное превью, нужно загрузить
+              const response = await fetch(imageUrl);
+              const blob = await response.blob();
+              const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
+              formData.append('images', file);
+            }
+          }
+
+          if (formData.has('images')) {
+            try {
+              await api.post(`/api/tasks/${newTaskId}/images`, formData);
+            } catch (error) {
+              console.error('Ошибка загрузки изображений:', error);
+              toast.warning('Задача создана, но не все изображения загружены');
+            }
+          }
+        }
+
         toast.success('Задача успешно создана и отправлена на модерацию. Вы получите уведомление после проверки администратором.');
       }
+      
       // Редирект в зависимости от режима
       if (activeMode === 'PERFORMER') {
         router.push('/executor/tasks');
@@ -117,7 +200,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Маркетплейс *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите маркетплейс" />
@@ -149,7 +232,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
                     form.setValue('tagIds', []);
                   }
                 }}
-                value={field.value}
+                value={field.value || ''}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -176,7 +259,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             <FormItem>
               <FormLabel>Заголовок *</FormLabel>
               <FormControl>
-                <Input placeholder="Введите название задачи" {...field} />
+                <Input placeholder="Введите название задачи" {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -194,11 +277,20 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
                   placeholder="Опишите задачу подробно"
                   rows={6}
                   {...field}
+                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        {/* Компонент загрузки изображений */}
+        <TaskImageUpload
+          images={images}
+          onImagesChange={setImages}
+          taskId={taskId}
+          disabled={form.formState.isSubmitting}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,7 +300,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Тип бюджета</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || 'FIXED'}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue />
@@ -235,7 +327,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
                     type="number"
                     min="0"
                     placeholder="0"
-                    {...field}
+                    value={field.value ?? ''}
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                   />
                 </FormControl>

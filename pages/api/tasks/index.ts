@@ -8,7 +8,16 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
     if (req.method === "GET") {
       // Получение списка задач с фильтрацией
-      const filters = taskFiltersSchema.parse(req.query);
+      const parseResult = taskFiltersSchema.safeParse(req.query);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({
+          error: "Ошибка валидации параметров запроса",
+          details: parseResult.error.errors,
+        });
+      }
+      
+      const filters = parseResult.data;
       const result = await getTasks(filters);
 
       return res.status(200).json(result);

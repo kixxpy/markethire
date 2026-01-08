@@ -37,6 +37,12 @@ export default function ProfilePage() {
     reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      telegram: '',
+      emailContact: '',
+    },
   });
 
   useEffect(() => {

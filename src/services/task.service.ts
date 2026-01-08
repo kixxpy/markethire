@@ -18,6 +18,7 @@ export interface TaskWithRelations {
   moderatedBy?: string | null;
   createdInMode: UserRole;
   createdAt: Date;
+  images: string[];
   user: {
     id: string;
     username: string | null;
@@ -88,6 +89,7 @@ export async function createTask(
       budgetType: data.budgetType,
       moderationStatus: "PENDING",
       createdInMode: data.createdInMode || 'SELLER',
+      images: data.images || [],
       tags: data.tagIds && data.tagIds.length > 0 ? {
         create: data.tagIds.map(tagId => ({ tagId })),
       } : undefined,
@@ -399,6 +401,28 @@ export async function updateTask(
 
   if (data.budgetType !== undefined) {
     updateData.budgetType = data.budgetType;
+  }
+
+  if (data.images !== undefined) {
+    // Получаем текущие изображения для удаления старых
+    const currentTask = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { images: true },
+    });
+
+    if (currentTask) {
+      // Удаляем изображения, которых нет в новом списке
+      const imagesToDelete = (currentTask.images || []).filter(
+        (img) => !data.images?.includes(img)
+      );
+      
+      if (imagesToDelete.length > 0) {
+        const { deleteTaskImages } = await import("./file.service");
+        deleteTaskImages(imagesToDelete);
+      }
+    }
+
+    updateData.images = data.images;
   }
 
   // После редактирования задача должна попасть на модерацию

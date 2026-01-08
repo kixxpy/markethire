@@ -36,6 +36,7 @@ export default function EditTaskPage() {
         budget: data.budget,
         budgetType: data.budgetType,
         tagIds: data.tags?.map((t: any) => t.tag.id) || [],
+        images: data.images || [],
       });
     } catch (error) {
       console.error('Ошибка загрузки задачи:', error);

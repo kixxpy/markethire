@@ -75,6 +75,7 @@ export const createTaskSchema = z.object({
   budgetType: z.enum(["FIXED", "NEGOTIABLE"]).default("FIXED"),
   tagIds: z.array(z.string()).optional(),
   createdInMode: z.enum(["SELLER", "PERFORMER"]).optional(),
+  images: z.array(z.string().url()).max(3, "Максимум 3 изображения").optional(),
 });
 
 /**
@@ -88,6 +89,7 @@ export const updateTaskSchema = z.object({
   budget: z.number().int().positive().nullable().optional(),
   budgetType: z.enum(["FIXED", "NEGOTIABLE"]).optional(),
   tagIds: z.array(z.string()).optional(),
+  images: z.array(z.string()).max(3, "Максимум 3 изображения").optional(),
 });
 
 /**

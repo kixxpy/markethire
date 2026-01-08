@@ -81,6 +81,7 @@ model Task {
   moderatedAt  DateTime?
   moderatedBy  String?
   createdInMode UserRole    @default(SELLER)
+  images       String[]     @default([]) // Массив URL изображений (максимум 3)
 
   responses    Response[]
   tags         TaskTag[]
