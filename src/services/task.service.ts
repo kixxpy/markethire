@@ -12,7 +12,7 @@ export interface TaskWithRelations {
   budget: number | null;
   budgetType: BudgetType;
   status: TaskStatus;
-  moderationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  moderationStatus: "PENDING" | "APPROVED" | "REJECTED" | "REVISION";
   moderationComment?: string | null;
   moderatedAt?: Date | null;
   moderatedBy?: string | null;
@@ -167,10 +167,10 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
 
   // Построение условий фильтрации
   // Показываем одобренные задачи или задачи без статуса (старые задачи)
-  // Исключаем только PENDING и REJECTED, что автоматически включит APPROVED и null
+  // Исключаем PENDING, REJECTED и REVISION, что автоматически включит APPROVED и null
   const where: any = {
     moderationStatus: {
-      notIn: ["PENDING", "REJECTED"],
+      notIn: ["PENDING", "REJECTED", "REVISION"],
     },
   };
 
@@ -729,7 +729,7 @@ export async function getTaskResponses(taskId: string, userId?: string) {
 export async function moderateTask(
   taskId: string,
   adminId: string,
-  action: "APPROVE" | "REJECT",
+  action: "APPROVE" | "REJECT" | "REVISION",
   comment?: string
 ) {
   const task = await prisma.task.findUnique({
@@ -748,11 +748,15 @@ export async function moderateTask(
     throw new Error("Задача не найдена");
   }
 
-  if (task.moderationStatus !== "PENDING") {
+  if (task.moderationStatus !== "PENDING" && task.moderationStatus !== "REVISION") {
     throw new Error("Задача уже была промодерирована");
   }
 
-  const moderationStatus = action === "APPROVE" ? "APPROVED" : "REJECTED";
+  const moderationStatus = action === "APPROVE" 
+    ? "APPROVED" 
+    : action === "REJECT" 
+    ? "REJECTED" 
+    : "REVISION";
   
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -800,13 +804,19 @@ export async function moderateTask(
     const { createNotification } = await import('./notification.service');
     const notificationType = action === "APPROVE" 
       ? 'TASK_APPROVED' 
-      : 'TASK_REJECTED';
+      : action === "REJECT"
+      ? 'TASK_REJECTED'
+      : 'TASK_REVISION';
     const notificationTitle = action === "APPROVE"
       ? 'Задача одобрена'
-      : 'Задача отклонена';
+      : action === "REJECT"
+      ? 'Задача отклонена'
+      : 'Задача отправлена на доработку';
     const notificationMessage = action === "APPROVE"
       ? `Ваша задача "${task.title}" была одобрена и опубликована.`
-      : `Ваша задача "${task.title}" была отклонена.${comment ? ` Причина: ${comment}` : ''}`;
+      : action === "REJECT"
+      ? `Ваша задача "${task.title}" была отклонена.${comment ? ` Причина: ${comment}` : ''}`
+      : `Ваша задача "${task.title}" отправлена на доработку.${comment ? ` Комментарий: ${comment}` : ''}`;
 
     await createNotification({
       userId: task.userId,
@@ -837,7 +847,9 @@ export async function getPendingTasks(
   const skip = (page - 1) * limit;
 
   const where = {
-    moderationStatus: "PENDING",
+    moderationStatus: {
+      in: ["PENDING", "REVISION"],
+    },
   };
 
   const total = await prisma.task.count({ where });
@@ -856,6 +868,9 @@ export async function getPendingTasks(
           username: true,
           name: true,
           email: true,
+          telegram: true,
+          whatsapp: true,
+          emailContact: true,
         },
       },
       category: {

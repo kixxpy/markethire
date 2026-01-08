@@ -5,17 +5,24 @@ import { api } from '../../src/api/client';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { CheckCircle2, XCircle, Clock, Users, FileText } from 'lucide-react';
+import { Textarea } from '../../components/ui/textarea';
+import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Task {
   id: string;
   title: string;
   description: string;
+  budget: number | null;
+  budgetType: string;
   user: {
     id: string;
     username: string;
     name: string | null;
+    email: string;
+    telegram?: string | null;
+    whatsapp?: string | null;
+    emailContact?: string | null;
   };
   category: {
     id: string;
@@ -37,6 +44,7 @@ export default function AdminDashboard() {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [revisionComments, setRevisionComments] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -64,13 +72,24 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleModerate = async (taskId: string, action: 'APPROVE' | 'REJECT', comment?: string) => {
+  const handleModerate = async (taskId: string, action: 'APPROVE' | 'REJECT' | 'REVISION', comment?: string) => {
     try {
       await api.post(`/api/admin/tasks/moderate?taskId=${taskId}`, {
         action,
         comment,
       });
-      toast.success(action === 'APPROVE' ? 'Задача одобрена' : 'Задача отклонена');
+      toast.success(
+        action === 'APPROVE' 
+          ? 'Задача одобрена' 
+          : action === 'REJECT'
+          ? 'Задача отклонена'
+          : 'Задача отправлена на доработку'
+      );
+      setRevisionComments(prev => {
+        const newState = { ...prev };
+        delete newState[taskId];
+        return newState;
+      });
       loadData();
     } catch (error: any) {
       toast.error(error.message || 'Ошибка модерации');
@@ -154,24 +173,78 @@ export default function AdminDashboard() {
                     key={task.id}
                     className="border rounded-lg p-4 space-y-3"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{task.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {task.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="outline">{task.category.name}</Badge>
-                          <span className="text-xs text-muted-foreground">
-                            Автор: {task.user.name || task.user.username}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(task.createdAt).toLocaleDateString('ru-RU')}
-                          </span>
-                        </div>
+                    {/* Название задачи */}
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
+                    </div>
+
+                    {/* Описание задачи */}
+                    <div>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {task.description}
+                      </p>
+                    </div>
+
+                    {/* Стоимость задачи */}
+                    {task.budget && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          Стоимость: {task.budget.toLocaleString('ru-RU')} ₽
+                          {task.budgetType === 'NEGOTIABLE' && ' (договорная)'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Информация об авторе */}
+                    <div className="flex flex-col gap-1 text-sm">
+                      <div className="font-medium">Автор:</div>
+                      <div className="text-muted-foreground space-y-1">
+                        {task.user.name && (
+                          <div>Имя: {task.user.name}</div>
+                        )}
+                        {task.user.username && (
+                          <div>Никнейм: {task.user.username}</div>
+                        )}
+                        {(task.user.telegram || task.user.whatsapp || task.user.emailContact) && (
+                          <div className="mt-1">
+                            <div className="font-medium mb-1">Контакты:</div>
+                            {task.user.telegram && (
+                              <div>Telegram: {task.user.telegram}</div>
+                            )}
+                            {task.user.whatsapp && (
+                              <div>WhatsApp: {task.user.whatsapp}</div>
+                            )}
+                            {task.user.emailContact && (
+                              <div>Email: {task.user.emailContact}</div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    {/* Категория и дата */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline">{task.category.name}</Badge>
+                      <span>
+                        {new Date(task.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+
+                    {/* Поле для комментария при отправке на доработку */}
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Введите комментарий для доработки (обязательно при отправке на доработку)"
+                        value={revisionComments[task.id] || ''}
+                        onChange={(e) => setRevisionComments(prev => ({
+                          ...prev,
+                          [task.id]: e.target.value
+                        }))}
+                        className="min-h-[80px]"
+                      />
+                    </div>
+
+                    {/* Кнопки действий */}
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         onClick={() => handleModerate(task.id, 'APPROVE')}
                         size="sm"
@@ -192,6 +265,22 @@ export default function AdminDashboard() {
                       >
                         <XCircle className="h-4 w-4 mr-2" />
                         Отклонить
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const comment = revisionComments[task.id];
+                          if (!comment || comment.trim() === '') {
+                            toast.error('Необходимо указать комментарий для доработки');
+                            return;
+                          }
+                          handleModerate(task.id, 'REVISION', comment);
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Отдать на доработку
                       </Button>
                     </div>
                   </div>

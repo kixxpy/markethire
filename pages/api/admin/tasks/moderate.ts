@@ -5,7 +5,7 @@ import { AuthenticatedRequest } from "../../../../src/middleware";
 import { z } from "zod";
 
 const moderateSchema = z.object({
-  action: z.enum(["APPROVE", "REJECT"]),
+  action: z.enum(["APPROVE", "REJECT", "REVISION"]),
   comment: z.string().optional(),
 });
 
@@ -36,7 +36,9 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     return res.status(200).json({
       message: validatedData.action === "APPROVE" 
         ? "Задача одобрена" 
-        : "Задача отклонена",
+        : validatedData.action === "REJECT"
+        ? "Задача отклонена"
+        : "Задача отправлена на доработку",
       task,
     });
   } catch (error: any) {
