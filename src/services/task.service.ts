@@ -388,6 +388,12 @@ export async function updateTask(
     updateData.budgetType = data.budgetType;
   }
 
+  // После редактирования задача должна попасть на модерацию
+  updateData.moderationStatus = "PENDING";
+  updateData.moderationComment = null;
+  updateData.moderatedAt = null;
+  updateData.moderatedBy = null;
+
   // Обновление тегов
   if (data.tagIds !== undefined) {
     // Удаляем все существующие связи
@@ -442,33 +448,88 @@ export async function updateTask(
     },
   });
 
-  return {
+  const result = {
     ...task,
-    moderationStatus: task.moderationStatus || "APPROVED", // Значение по умолчанию для старых задач
+    moderationStatus: task.moderationStatus || "PENDING",
     tags: task.tags.map(tt => tt.tag),
   };
+
+  // Создание уведомления о том, что задача отправлена на модерацию
+  try {
+    const { createNotification } = await import('./notification.service');
+    await createNotification({
+      userId,
+      type: 'TASK_PENDING_MODERATION',
+      role: 'SELLER',
+      title: 'Задача отправлена на модерацию',
+      message: `Ваша задача "${task.title}" отправлена на проверку администратору после редактирования. Она будет опубликована после одобрения.`,
+      link: `/tasks/${task.id}`,
+    });
+  } catch (error) {
+    console.error('Ошибка создания уведомления:', error);
+  }
+
+  return result;
 }
 
 /**
  * Удаление задачи
  */
-export async function deleteTask(taskId: string, userId: string) {
+export async function deleteTask(taskId: string, userId: string, isAdmin: boolean = false) {
   // Проверка существования задачи и прав доступа
   const task = await prisma.task.findUnique({
     where: { id: taskId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          role: true,
+        },
+      },
+    },
   });
 
   if (!task) {
     throw new Error("Задача не найдена");
   }
 
-  if (task.userId !== userId) {
+  // Если не администратор, проверяем права владельца
+  if (!isAdmin && task.userId !== userId) {
     throw new Error("Недостаточно прав для удаления задачи");
   }
+
+  // Сохраняем информацию о задаче и владельце перед удалением
+  const taskOwnerId = task.userId;
+  const taskOwnerRole = task.user.role;
+  const taskTitle = task.title;
 
   await prisma.task.delete({
     where: { id: taskId },
   });
+
+  // Если задача удалена администратором, создаем уведомление владельцу
+  if (isAdmin && taskOwnerId !== userId) {
+    try {
+      const { createNotification } = await import('./notification.service');
+      
+      // Определяем роль для уведомления (SELLER, так как задачи создают селлеры)
+      const notificationRole = taskOwnerRole === 'SELLER' || taskOwnerRole === 'BOTH' 
+        ? 'SELLER' 
+        : 'BOTH';
+
+      await createNotification({
+        userId: taskOwnerId,
+        type: 'TASK_DELETED_BY_ADMIN',
+        role: notificationRole,
+        title: 'Задача удалена администратором',
+        message: `Ваша задача "${taskTitle}" была удалена администратором. Для уточнения причины обратитесь к администратору.`,
+        link: null, // Задача уже удалена, ссылка не нужна
+      });
+    } catch (error) {
+      console.error('Ошибка создания уведомления:', error);
+      // Не прерываем выполнение, если уведомление не создалось
+    }
+  }
 }
 
 /**

@@ -57,12 +57,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
 
     if (req.method === "DELETE") {
-      // Удаление задачи (только владелец)
+      // Удаление задачи (владелец или администратор)
       if (!req.user) {
         return res.status(401).json({ error: "Необходима авторизация" });
       }
 
-      await deleteTask(id, req.user.userId);
+      const isAdminUser = isAdmin(req.user.role);
+      await deleteTask(id, req.user.userId, isAdminUser);
 
       return res.status(200).json({
         message: "Задача успешно удалена",

@@ -3,8 +3,7 @@ import { Task, Category, Marketplace, BudgetType, TaskModerationStatus } from '@
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { Badge } from '../ui/badge';
-import { cn, getDisplayName } from '../../src/lib/utils';
+import { getDisplayName } from '../../src/lib/utils';
 
 interface TaskCardProps {
   task: Task & {
@@ -28,18 +27,6 @@ const marketplaceLabels: Record<Marketplace, string> = {
   OZON: 'OZON',
 };
 
-const moderationStatusLabels: Record<TaskModerationStatus, string> = {
-  PENDING: 'На модерации',
-  APPROVED: 'Одобрена',
-  REJECTED: 'Отклонена',
-};
-
-const moderationStatusColors: Record<TaskModerationStatus, string> = {
-  PENDING: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
-  APPROVED: 'bg-green-500/10 text-green-700 border-green-500/20',
-  REJECTED: 'bg-red-500/10 text-red-700 border-red-500/20',
-};
-
 export default function TaskCard({ task }: TaskCardProps) {
   const getDuration = () => {
     return '1 месяц';
@@ -51,14 +38,6 @@ export default function TaskCard({ task }: TaskCardProps) {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <h3 className="text-lg font-semibold line-clamp-2">{task.title}</h3>
-            {task.moderationStatus && (
-              <Badge
-                variant="outline"
-                className={cn(moderationStatusColors[task.moderationStatus])}
-              >
-                {moderationStatusLabels[task.moderationStatus]}
-              </Badge>
-            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

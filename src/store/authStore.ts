@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type UserRole = 'SELLER' | 'PERFORMER' | 'BOTH';
+type UserRole = 'SELLER' | 'PERFORMER' | 'BOTH' | 'ADMIN';
 type ActiveMode = 'SELLER' | 'PERFORMER';
 
 interface User {

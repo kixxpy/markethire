@@ -6,7 +6,18 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Textarea } from '../../components/ui/textarea';
-import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../../components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 interface Task {
@@ -93,6 +104,16 @@ export default function AdminDashboard() {
       loadData();
     } catch (error: any) {
       toast.error(error.message || 'Ошибка модерации');
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await api.delete(`/api/tasks/${taskId}`);
+      toast.success('Задача удалена');
+      loadData();
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка удаления задачи');
     }
   };
 
@@ -282,6 +303,32 @@ export default function AdminDashboard() {
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Отдать на доработку
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Удалить
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Удалить задачу?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Вы уверены, что хотите удалить эту задачу? Владелец задачи получит уведомление. Это действие нельзя отменить.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Отмена</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteTask(task.id)}>
+                              Удалить задачу
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 ))}

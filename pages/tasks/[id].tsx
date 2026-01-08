@@ -9,9 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { Skeleton } from '../../components/ui/skeleton';
-import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
-import { cn } from '../../src/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,17 +63,6 @@ const statusLabels: Record<TaskStatus, string> = {
   CLOSED: 'Закрыта',
 };
 
-const moderationStatusLabels: Record<TaskModerationStatus, string> = {
-  PENDING: 'На модерации',
-  APPROVED: 'Одобрена',
-  REJECTED: 'Отклонена',
-};
-
-const moderationStatusColors: Record<TaskModerationStatus, string> = {
-  PENDING: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
-  APPROVED: 'bg-green-500/10 text-green-700 border-green-500/20',
-  REJECTED: 'bg-red-500/10 text-red-700 border-red-500/20',
-};
 
 export default function TaskDetailPage() {
   const router = useRouter();
@@ -132,6 +119,7 @@ export default function TaskDetailPage() {
   };
 
   const isOwner = task && user && task.userId === user.id;
+  const isAdmin = user?.role === 'ADMIN';
   const canRespond = isAuthenticated && task && !isOwner && task.status === 'OPEN';
 
   if (loading) {
@@ -164,14 +152,6 @@ export default function TaskDetailPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-4">
                 <CardTitle className="text-2xl">{task.title}</CardTitle>
-                {task.moderationStatus && (
-                  <Badge
-                    variant="outline"
-                    className={cn(moderationStatusColors[task.moderationStatus])}
-                  >
-                    {moderationStatusLabels[task.moderationStatus]}
-                  </Badge>
-                )}
               </div>
               <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                 <span>{marketplaceLabels[task.marketplace]}</span>
@@ -186,22 +166,28 @@ export default function TaskDetailPage() {
                 </span>
               </div>
             </div>
-            {isOwner && (
+            {(isOwner || isAdmin) && (
               <div className="flex gap-2">
-                {task.status === 'OPEN' && (
+                {isOwner && task.status === 'OPEN' && (
                   <Button variant="outline" asChild>
                     <Link href={`/tasks/${task.id}/edit`}>Редактировать</Link>
                   </Button>
                 )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">Удалить</Button>
+                    <Button variant="destructive">
+                      {isAdmin ? 'Удалить (админ)' : 'Удалить'}
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Удалить задачу?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {isAdmin ? 'Удалить задачу (администратор)?' : 'Удалить задачу?'}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        Вы уверены, что хотите удалить задачу? Это действие нельзя отменить.
+                        {isAdmin 
+                          ? 'Вы уверены, что хотите удалить эту задачу как администратор? Владелец задачи получит уведомление. Это действие нельзя отменить.'
+                          : 'Вы уверены, что хотите удалить задачу? Это действие нельзя отменить.'}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
