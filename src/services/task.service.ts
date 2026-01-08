@@ -164,6 +164,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
     sortOrder,
     page,
     limit,
+    createdInMode,
   } = filters;
 
   const skip = (page - 1) * limit;
@@ -176,6 +177,11 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
       notIn: ["PENDING", "REJECTED", "REVISION"],
     },
   };
+
+  // Фильтр по режиму создания
+  if (createdInMode) {
+    where.createdInMode = createdInMode;
+  }
 
   if (categoryId) {
     where.categoryId = categoryId;
