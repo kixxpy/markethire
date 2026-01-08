@@ -31,7 +31,7 @@ interface PaginatedTasks {
   totalPages: number;
 }
 
-export default function SellerTasksPage() {
+export default function ExecutorTasksPage() {
   const { isAuthenticated, activeMode } = useAuthStore();
   const router = useRouter();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
@@ -42,12 +42,12 @@ export default function SellerTasksPage() {
       router.push('/login');
       return;
     }
-    if (activeMode !== 'SELLER') {
+    if (activeMode !== 'PERFORMER') {
       router.push('/');
       return;
     }
     if (typeof window !== 'undefined') {
-      localStorage.setItem('lastSellerPath', '/seller/tasks');
+      localStorage.setItem('lastPerformerPath', '/executor/tasks');
     }
     loadTasks();
   }, [isAuthenticated, activeMode, router]);
@@ -55,7 +55,7 @@ export default function SellerTasksPage() {
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const data = await api.get<PaginatedTasks>('/api/tasks/my?createdInMode=SELLER');
+      const data = await api.get<PaginatedTasks>('/api/tasks/my?createdInMode=PERFORMER');
       setTasks(data.tasks || []);
     } catch (error) {
       console.error('Ошибка загрузки задач:', error);
@@ -65,7 +65,7 @@ export default function SellerTasksPage() {
     }
   };
 
-  if (!isAuthenticated || activeMode !== 'SELLER') {
+  if (!isAuthenticated || activeMode !== 'PERFORMER') {
     return null;
   }
 
@@ -73,7 +73,7 @@ export default function SellerTasksPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Мои задачи</h1>
+          <h1 className="text-3xl font-bold">Мои задачи (как исполнитель)</h1>
           <TaskPagesSwitcher />
         </div>
         <Button asChild>
@@ -90,7 +90,7 @@ export default function SellerTasksPage() {
       ) : tasks.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">Здесь будут ваши задачи</p>
+            <p className="text-muted-foreground">Здесь будут ваши задачи, созданные в режиме исполнителя</p>
             <Button asChild>
               <Link href="/tasks/create">Создать первую задачу</Link>
             </Button>

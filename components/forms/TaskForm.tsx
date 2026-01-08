@@ -5,6 +5,7 @@ import { createTaskSchema } from '../../src/lib/validation';
 import { api } from '../../src/api/client';
 import { Category, Tag } from '@prisma/client';
 import { useRouter } from 'next/router';
+import { useAuthStore } from '../../src/store/authStore';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -31,6 +32,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const router = useRouter();
+  const { activeMode } = useAuthStore();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(createTaskSchema),
@@ -88,10 +90,19 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
         await api.patch(`/api/tasks/${taskId}`, data);
         toast.success('Задача обновлена');
       } else {
-        await api.post('/api/tasks', data);
+        // Передаем activeMode при создании
+        await api.post('/api/tasks', {
+          ...data,
+          createdInMode: activeMode || 'SELLER',
+        });
         toast.success('Задача успешно создана и отправлена на модерацию. Вы получите уведомление после проверки администратором.');
       }
-      router.push('/tasks/my');
+      // Редирект в зависимости от режима
+      if (activeMode === 'PERFORMER') {
+        router.push('/executor/tasks');
+      } else {
+        router.push('/seller/tasks');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Ошибка сохранения задачи');
     }

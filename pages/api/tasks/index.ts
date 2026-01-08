@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getTasks, createTask } from "../../../src/services/task.service";
 import { createTaskSchema, taskFiltersSchema } from "../../../src/lib/validation";
-import { withAuth, isSeller } from "../../../src/middleware";
+import { withAuth } from "../../../src/middleware";
 import { AuthenticatedRequest } from "../../../src/middleware";
 
 async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
@@ -20,10 +20,10 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Необходима авторизация" });
       }
 
-      // Проверка, что пользователь может создавать задачи (селлер)
-      if (!isSeller(req.user.role)) {
+      // Проверка, что пользователь может создавать задачи (SELLER, PERFORMER или BOTH)
+      if (req.user.role !== 'SELLER' && req.user.role !== 'PERFORMER' && req.user.role !== 'BOTH') {
         return res.status(403).json({
-          error: "Только селлеры могут создавать задачи",
+          error: "Недостаточно прав для создания задач",
         });
       }
 

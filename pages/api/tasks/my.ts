@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getMyTasks } from "../../../src/services/task.service";
 import { taskFiltersSchema } from "../../../src/lib/validation";
-import { withAuth, AuthenticatedRequest, isSeller } from "../../../src/middleware";
+import { withAuth, AuthenticatedRequest } from "../../../src/middleware";
 
 async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
@@ -13,15 +13,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       return res.status(401).json({ error: "Необходима авторизация" });
     }
 
-    // Проверка, что пользователь может просматривать свои задачи (селлер)
-    if (!isSeller(req.user.role)) {
-      return res.status(403).json({
-        error: "Только селлеры могут просматривать свои задачи",
-      });
-    }
-
     const filters = taskFiltersSchema.parse(req.query);
-    const result = await getMyTasks(req.user.userId, filters);
+    const createdInMode = req.query.createdInMode as 'SELLER' | 'PERFORMER' | undefined;
+    const result = await getMyTasks(req.user.userId, {
+      ...filters,
+      createdInMode,
+    });
 
     return res.status(200).json(result);
   } catch (error: any) {

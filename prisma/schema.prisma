@@ -80,6 +80,7 @@ model Task {
   moderationComment String?
   moderatedAt  DateTime?
   moderatedBy  String?
+  createdInMode UserRole    @default(SELLER)
 
   responses    Response[]
   tags         TaskTag[]

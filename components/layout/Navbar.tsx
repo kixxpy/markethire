@@ -55,6 +55,7 @@ export function Navbar() {
       return [
         ...baseLinks,
         { href: '/executor/dashboard', label: 'Панель управления' },
+        { href: '/executor/tasks', label: 'Мои задачи' },
         { href: '/executor/services', label: 'Мои услуги' },
         { href: '/executor/responses', label: 'Мои отклики' },
       ];

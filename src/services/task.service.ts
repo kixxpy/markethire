@@ -1,6 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { CreateTaskInput, UpdateTaskInput, TaskFiltersInput } from "../lib/validation";
-import { Marketplace, TaskStatus, BudgetType } from "@prisma/client";
+import { Marketplace, TaskStatus, BudgetType, UserRole } from "@prisma/client";
 
 export interface TaskWithRelations {
   id: string;
@@ -16,6 +16,7 @@ export interface TaskWithRelations {
   moderationComment?: string | null;
   moderatedAt?: Date | null;
   moderatedBy?: string | null;
+  createdInMode: UserRole;
   createdAt: Date;
   user: {
     id: string;
@@ -85,6 +86,7 @@ export async function createTask(
       budget: data.budget ?? null,
       budgetType: data.budgetType,
       moderationStatus: "PENDING",
+      createdInMode: data.createdInMode || 'SELLER',
       tags: data.tagIds && data.tagIds.length > 0 ? {
         create: data.tagIds.map(tagId => ({ tagId })),
       } : undefined,
@@ -131,10 +133,11 @@ export async function createTask(
   // Создание уведомления о том, что задача отправлена на модерацию
   try {
     const { createNotification } = await import('./notification.service');
+    const notificationRole = task.createdInMode === 'PERFORMER' ? 'PERFORMER' : 'SELLER';
     await createNotification({
       userId,
       type: 'TASK_PENDING_MODERATION',
-      role: 'SELLER',
+      role: notificationRole,
       title: 'Задача отправлена на модерацию',
       message: `Ваша задача "${task.title}" отправлена на проверку администратору. Она будет опубликована после одобрения.`,
       link: `/tasks/${task.id}`,
@@ -457,10 +460,11 @@ export async function updateTask(
   // Создание уведомления о том, что задача отправлена на модерацию
   try {
     const { createNotification } = await import('./notification.service');
+    const notificationRole = task.createdInMode === 'PERFORMER' ? 'PERFORMER' : 'SELLER';
     await createNotification({
       userId,
       type: 'TASK_PENDING_MODERATION',
-      role: 'SELLER',
+      role: notificationRole,
       title: 'Задача отправлена на модерацию',
       message: `Ваша задача "${task.title}" отправлена на проверку администратору после редактирования. Она будет опубликована после одобрения.`,
       link: `/tasks/${task.id}`,
@@ -500,7 +504,7 @@ export async function deleteTask(taskId: string, userId: string, isAdmin: boolea
 
   // Сохраняем информацию о задаче и владельце перед удалением
   const taskOwnerId = task.userId;
-  const taskOwnerRole = task.user.role;
+  const taskCreatedInMode = task.createdInMode;
   const taskTitle = task.title;
 
   await prisma.task.delete({
@@ -512,10 +516,8 @@ export async function deleteTask(taskId: string, userId: string, isAdmin: boolea
     try {
       const { createNotification } = await import('./notification.service');
       
-      // Определяем роль для уведомления (SELLER, так как задачи создают селлеры)
-      const notificationRole = taskOwnerRole === 'SELLER' || taskOwnerRole === 'BOTH' 
-        ? 'SELLER' 
-        : 'BOTH';
+      // Определяем роль для уведомления на основе createdInMode
+      const notificationRole = taskCreatedInMode === 'PERFORMER' ? 'PERFORMER' : 'SELLER';
 
       await createNotification({
         userId: taskOwnerId,
@@ -630,7 +632,11 @@ export async function closeTask(taskId: string, userId: string) {
  */
 export async function getMyTasks(
   userId: string,
-  filters: Omit<TaskFiltersInput, "page" | "limit"> & { page?: number; limit?: number }
+  filters: Omit<TaskFiltersInput, "page" | "limit"> & { 
+    page?: number; 
+    limit?: number;
+    createdInMode?: 'SELLER' | 'PERFORMER';
+  }
 ): Promise<PaginatedTasks> {
   const {
     categoryId,
@@ -643,6 +649,7 @@ export async function getMyTasks(
     sortOrder,
     page = 1,
     limit = 20,
+    createdInMode,
   } = filters;
 
   const skip = (page - 1) * limit;
@@ -651,6 +658,11 @@ export async function getMyTasks(
   const where: any = {
     userId,
   };
+
+  // Фильтр по режиму создания
+  if (createdInMode) {
+    where.createdInMode = createdInMode;
+  }
 
   if (categoryId) {
     where.categoryId = categoryId;
@@ -879,10 +891,11 @@ export async function moderateTask(
       ? `Ваша задача "${task.title}" была отклонена.${comment ? ` Причина: ${comment}` : ''}`
       : `Ваша задача "${task.title}" отправлена на доработку.${comment ? ` Комментарий: ${comment}` : ''}`;
 
+    const notificationRole = updatedTask.createdInMode === 'PERFORMER' ? 'PERFORMER' : 'SELLER';
     await createNotification({
       userId: task.userId,
       type: notificationType,
-      role: 'SELLER',
+      role: notificationRole,
       title: notificationTitle,
       message: notificationMessage,
       link: `/tasks/${taskId}`,

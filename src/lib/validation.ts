@@ -74,6 +74,7 @@ export const createTaskSchema = z.object({
   budget: z.number().int().positive().optional(),
   budgetType: z.enum(["FIXED", "NEGOTIABLE"]).default("FIXED"),
   tagIds: z.array(z.string()).optional(),
+  createdInMode: z.enum(["SELLER", "PERFORMER"]).optional(),
 });
 
 /**
@@ -113,6 +114,7 @@ export const taskFiltersSchema = z.object({
   limit: z.string().optional().transform((val) => 
     val ? parseInt(val, 10) : 20
   ),
+  createdInMode: z.enum(["SELLER", "PERFORMER"]).optional(),
 });
 
 /**
