@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 import { useAuthStore } from '../../src/store/authStore';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
@@ -14,6 +15,7 @@ export function Navbar() {
   const { user, isAuthenticated, logout, activeMode } = useAuthStore();
   const router = useRouter();
   const currentPath = router.pathname;
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -149,7 +151,7 @@ export function Navbar() {
           )}
 
           {/* Mobile Menu */}
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
@@ -160,6 +162,7 @@ export function Navbar() {
               <div className="flex flex-col gap-4 mt-6">
                 <Link
                   href="/"
+                  onClick={() => setIsSheetOpen(false)}
                   className="flex items-center gap-2 text-xl font-bold"
                 >
                   <svg 
@@ -192,6 +195,7 @@ export function Navbar() {
                     <Link
                       key={link.href + link.label}
                       href={link.href}
+                      onClick={() => setIsSheetOpen(false)}
                       className={cn(
                         "px-3 py-2 rounded-md text-sm font-medium transition-colors",
                         isActive(link.href)
@@ -207,6 +211,7 @@ export function Navbar() {
                 {isAuthenticated && (
                   <Link
                     href="/profile"
+                    onClick={() => setIsSheetOpen(false)}
                     className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer mt-2 pt-4 border-t"
                   >
                     <div className="flex items-center justify-center h-8 w-8 rounded-full bg-accent flex-shrink-0">
