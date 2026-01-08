@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '../../src/store/authStore';
 import { Button } from '../ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { Menu } from 'lucide-react';
+import { Menu, User, LogOut } from 'lucide-react';
 import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationCenter } from '../notifications/NotificationCenter';
@@ -113,25 +112,20 @@ export function Navbar() {
               <RoleSwitcher />
               <Link
                 href="/profile"
-                className="hidden sm:flex items-center gap-2 sm:gap-3 max-w-[180px] lg:max-w-xs truncate hover:opacity-80 transition-opacity cursor-pointer"
+                className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
               >
-                <span className="text-sm text-muted-foreground">
+                <User className="h-4 w-4 flex-shrink-0" />
+                <span className="max-w-[140px] lg:max-w-[180px] truncate">
                   {getDisplayName((user as any)?.username, user?.email)}
                 </span>
-                <Avatar>
-                  {user?.avatarUrl && (
-                    <AvatarImage src={user.avatarUrl} alt={getDisplayName((user as any)?.username, user?.email)} />
-                  )}
-                  <AvatarFallback>
-                    {getDisplayName((user as any)?.username, user?.email).charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
               </Link>
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
                 onClick={handleLogout}
+                className="gap-2"
               >
+                <LogOut className="h-4 w-4" />
                 Выйти
               </Button>
             </>
@@ -205,18 +199,13 @@ export function Navbar() {
                 {isAuthenticated && (
                   <Link
                     href="/profile"
-                    className="flex items-center gap-3 pt-4 border-t hover:opacity-80 transition-opacity cursor-pointer"
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer mt-2 pt-4 border-t"
                   >
-                    <Avatar>
-                      {user?.avatarUrl && (
-                        <AvatarImage src={user.avatarUrl} alt={getDisplayName((user as any)?.username, user?.email)} />
-                      )}
-                      <AvatarFallback>
-                        {getDisplayName((user as any)?.username, user?.email).charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-accent flex-shrink-0">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium truncate">
                         {getDisplayName((user as any)?.username, user?.email)}
                       </span>
                     </div>
