@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Task, Category, Marketplace, BudgetType, TaskModerationStatus } from '@prisma/client';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { getDisplayName } from '../../src/lib/utils';
 
 interface TaskCardProps {
@@ -14,6 +14,7 @@ interface TaskCardProps {
       username?: string | null;
       name: string | null;
       email: string;
+      avatarUrl?: string | null;
     };
     tags: Array<{
       id: string;
@@ -27,53 +28,88 @@ const marketplaceLabels: Record<Marketplace, string> = {
   OZON: 'OZON',
 };
 
+const marketplaceColors: Record<Marketplace, string> = {
+  WB: 'bg-blue-100 text-blue-800 border-blue-200',
+  OZON: 'bg-orange-100 text-orange-800 border-orange-200',
+};
+
 export default function TaskCard({ task }: TaskCardProps) {
   const getDuration = () => {
     return '1 месяц';
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <Link href={`/tasks/${task.id}`}>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <h3 className="text-lg font-semibold line-clamp-2">{task.title}</h3>
+    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full flex flex-col">
+      <Link href={`/tasks/${task.id}`} className="flex flex-col h-full">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h3 className="text-xl font-bold line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+              {task.title}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge 
+              variant="outline" 
+              className={`${marketplaceColors[task.marketplace]} font-medium text-xs`}
+            >
+              {marketplaceLabels[task.marketplace]}
+            </Badge>
+            {task.tags.slice(0, 3).map((tag) => (
+              <Badge 
+                key={tag.id} 
+                variant="secondary" 
+                className="text-xs font-normal"
+              >
+                {tag.name}
+              </Badge>
+            ))}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground line-clamp-3">
+        
+        <CardContent className="flex-1 space-y-4 pb-4">
+          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
             {task.description}
           </p>
           
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center justify-between pt-2 border-t">
             {task.budget && (
-              <span className="font-medium">
-                {task.budget.toLocaleString('ru-RU')} ₽
-                {task.budgetType === 'NEGOTIABLE' && ' (договорная)'}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold text-foreground">
+                  {task.budget.toLocaleString('ru-RU')} ₽
+                </span>
+                {task.budgetType === 'NEGOTIABLE' && (
+                  <span className="text-xs text-muted-foreground mt-0.5">
+                    договорная
+                  </span>
+                )}
+              </div>
             )}
-            <span className="text-muted-foreground">{getDuration()}</span>
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-            <span>{marketplaceLabels[task.marketplace]}</span>
-            {task.tags.slice(0, 2).map((tag) => (
-              <span key={tag.id}>{tag.name}</span>
-            ))}
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-medium text-foreground">
+                {getDuration()}
+              </span>
+              <span className="text-xs text-muted-foreground mt-0.5">
+                срок выполнения
+              </span>
+            </div>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarFallback className="text-xs">
+        
+        <CardFooter className="flex items-center justify-between pt-4 border-t bg-muted/30">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-8 w-8 ring-2 ring-background">
+              {task.user.avatarUrl && (
+                <AvatarImage src={task.user.avatarUrl} alt={getDisplayName(task.user.username, task.user.email)} />
+              )}
+              <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
                 {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm font-medium text-foreground">
               {getDisplayName(task.user.username, task.user.email)}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground font-medium">
             {new Date(task.createdAt).toLocaleDateString('ru-RU', {
               month: 'short',
               day: 'numeric',

@@ -16,6 +16,7 @@ interface TaskWithRelations extends Task {
     username?: string | null;
     name: string | null;
     email: string;
+    avatarUrl?: string | null;
   };
   tags: Array<{
     id: string;

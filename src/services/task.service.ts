@@ -23,6 +23,7 @@ export interface TaskWithRelations {
     username: string | null;
     name: string | null;
     email: string;
+    avatarUrl: string | null;
   };
   category: {
     id: string;
@@ -98,6 +99,7 @@ export async function createTask(
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -232,6 +234,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -284,6 +287,7 @@ export async function getTaskById(taskId: string): Promise<TaskWithRelations | n
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -431,6 +435,7 @@ export async function updateTask(
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -571,6 +576,7 @@ export async function closeTask(taskId: string, userId: string) {
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -719,6 +725,7 @@ export async function getMyTasks(
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
@@ -852,6 +859,7 @@ export async function moderateTask(
           username: true,
           name: true,
           email: true,
+          avatarUrl: true,
         },
       },
       category: {
