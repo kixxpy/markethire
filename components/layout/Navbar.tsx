@@ -30,7 +30,7 @@ export function Navbar() {
 
   const getNavLinks = () => {
     const baseLinks = [
-      { href: '/', label: 'Маркетплейс задач', icon: '💼' },
+      { href: '/', label: 'Каталог задач' },
     ];
 
     if (!isAuthenticated) return baseLinks;
@@ -64,10 +64,25 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-2 text-base sm:text-xl font-bold text-foreground hover:text-primary transition-colors whitespace-nowrap"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-lg shadow-sm">
-              👁
-            </div>
-            <span className="hidden xs:inline sm:inline">Markethire</span>
+            <svg 
+              width="120" 
+              height="28" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-7 sm:h-8 w-auto"
+              viewBox="0 0 300 70"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <text 
+                x="0" 
+                y="50"
+                fontFamily="Verdana, sans-serif"
+                fontSize="48"
+                fontWeight="700"
+                fill="currentColor"
+              >
+                Markethire
+              </text>
+            </svg>
           </Link>
           
           {/* Desktop / Tablet Navigation */}
@@ -145,10 +160,25 @@ export function Navbar() {
                   href="/"
                   className="flex items-center gap-2 text-xl font-bold"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-lg">
-                    👁
-                  </div>
-                  <span>Markethire</span>
+                  <svg 
+                    width="120" 
+                    height="28" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-7 w-auto"
+                    viewBox="0 0 300 70"
+                    preserveAspectRatio="xMidYMid meet"
+                  >
+                    <text 
+                      x="0" 
+                      y="50"
+                      fontFamily="Verdana, sans-serif"
+                      fontSize="48"
+                      fontWeight="700"
+                      fill="currentColor"
+                    >
+                      Markethire
+                    </text>
+                  </svg>
                 </Link>
                 {isAuthenticated && (
                   <div className="pb-2 border-b">
