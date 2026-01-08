@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema } from '../src/lib/validation';
 import { api } from '../src/api/client';
 import { useAuthStore } from '../src/store/authStore';
-import { Category, Tag } from '@prisma/client';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -15,23 +14,15 @@ import { getDisplayName } from '../src/lib/utils';
 
 type ProfileFormData = {
   name?: string;
-  username?: string;
   description?: string;
-  priceFrom?: number;
   telegram?: string;
-  whatsapp?: string;
   emailContact?: string;
-  role?: 'SELLER' | 'PERFORMER' | 'BOTH';
 };
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, updateUser } = useAuthStore();
   const [profile, setProfile] = useState<any>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [userTags, setUserTags] = useState<Tag[]>([]);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -54,7 +45,6 @@ export default function ProfilePage() {
       return;
     }
     loadProfile();
-    loadCategories();
   }, [isAuthenticated, router]);
 
   const loadProfile = async () => {
@@ -64,54 +54,14 @@ export default function ProfilePage() {
       setAvatarPreview(data.avatarUrl || null);
       reset({
         name: data.name || '',
-        username: data.username || '',
         description: data.description || '',
-        priceFrom: data.priceFrom || undefined,
         telegram: data.telegram || '',
-        whatsapp: data.whatsapp || '',
         emailContact: data.emailContact || '',
-        role: data.role,
       });
-      loadUserTags();
     } catch (error) {
       console.error('Ошибка загрузки профиля:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadCategories = async () => {
-    try {
-      const data = await api.get<Category[]>('/api/categories');
-      setCategories(data);
-    } catch (error) {
-      console.error('Ошибка загрузки категорий:', error);
-    }
-  };
-
-  const loadUserTags = async () => {
-    try {
-      const data = await api.get<Tag[]>('/api/users/me/tags');
-      setUserTags(data);
-    } catch (error) {
-      console.error('Ошибка загрузки тегов:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedCategoryId) {
-      loadTags(selectedCategoryId);
-    } else {
-      setAvailableTags([]);
-    }
-  }, [selectedCategoryId]);
-
-  const loadTags = async (categoryId: string) => {
-    try {
-      const data = await api.get<Tag[]>(`/api/tags?categoryId=${categoryId}`);
-      setAvailableTags(data);
-    } catch (error) {
-      console.error('Ошибка загрузки тегов:', error);
     }
   };
 
@@ -196,24 +146,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAddTag = async (tagId: string) => {
-    try {
-      await api.post('/api/users/me/tags', { tagIds: [tagId] });
-      loadUserTags();
-    } catch (error) {
-      console.error('Ошибка добавления тега:', error);
-    }
-  };
-
-  const handleRemoveTag = async (tagId: string) => {
-    try {
-      await api.delete(`/api/users/me/tags/${tagId}`);
-      loadUserTags();
-    } catch (error) {
-      console.error('Ошибка удаления тега:', error);
-    }
-  };
-
   if (!isAuthenticated || loading) {
     return <div className="text-center py-12">Загрузка...</div>;
   }
@@ -273,18 +205,16 @@ export default function ProfilePage() {
             <div>
               <Label htmlFor="username">Никнейм</Label>
               <Input
-                {...register('username')}
                 type="text"
                 id="username"
-                placeholder="username"
+                value={profile?.username || ''}
+                disabled
+                className="bg-muted cursor-not-allowed"
               />
-              {errors.username && (
-                <p className="text-sm text-red-600 mt-1">{errors.username.message}</p>
-              )}
             </div>
 
             <div>
-              <Label htmlFor="name">Имя</Label>
+              <Label htmlFor="name">Имя (необязательно)</Label>
               <Input
                 {...register('name')}
                 type="text"
@@ -297,19 +227,6 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label htmlFor="role">Роль</Label>
-              <select
-                {...register('role')}
-                id="role"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="BOTH">Селлер и Исполнитель</option>
-                <option value="SELLER">Только Селлер</option>
-                <option value="PERFORMER">Только Исполнитель</option>
-              </select>
-            </div>
-
-            <div>
               <Label htmlFor="description">Описание (для исполнителей)</Label>
               <textarea
                 {...register('description')}
@@ -319,46 +236,29 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="priceFrom">Цена от (₽)</Label>
-              <Input
-                {...register('priceFrom', { valueAsNumber: true })}
-                type="number"
-                id="priceFrom"
-                min="0"
-              />
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="telegram">Telegram</Label>
+                <Label htmlFor="telegram">Telegram (необязательно)</Label>
                 <Input
                   {...register('telegram')}
                   type="text"
                   id="telegram"
+                  placeholder="@username"
                 />
               </div>
 
               <div>
-                <Label htmlFor="whatsapp">WhatsApp</Label>
+                <Label htmlFor="emailContact">Email для связи (необязательно)</Label>
                 <Input
-                  {...register('whatsapp')}
-                  type="text"
-                  id="whatsapp"
+                  {...register('emailContact')}
+                  type="email"
+                  id="emailContact"
+                  placeholder="email@example.com"
                 />
+                {errors.emailContact && (
+                  <p className="text-sm text-red-600 mt-1">{errors.emailContact.message}</p>
+                )}
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="emailContact">Email для связи</Label>
-              <Input
-                {...register('emailContact')}
-                type="email"
-                id="emailContact"
-              />
-              {errors.emailContact && (
-                <p className="text-sm text-red-600 mt-1">{errors.emailContact.message}</p>
-              )}
             </div>
 
             <Button
@@ -369,68 +269,6 @@ export default function ProfilePage() {
               {isSubmitting ? 'Сохранение...' : 'Сохранить'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Мои теги</h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {userTags.map((tag) => (
-            <span
-              key={tag.id}
-              className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center"
-            >
-              {tag.name}
-              <button
-                onClick={() => handleRemoveTag(tag.id)}
-                className="ml-2 text-blue-600 hover:text-blue-800"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Добавить тег
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Выберите категорию</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            {availableTags.length > 0 && (
-              <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleAddTag(e.target.value);
-                    e.target.value = '';
-                  }
-                }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Выберите тег</option>
-                {availableTags
-                  .filter((tag) => !userTags.some((ut) => ut.id === tag.id))
-                  .map((tag) => (
-                    <option key={tag.id} value={tag.id}>
-                      {tag.name}
-                    </option>
-                  ))}
-              </select>
-            )}
-          </div>
-        </div>
         </CardContent>
       </Card>
     </div>

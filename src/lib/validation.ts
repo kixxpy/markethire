@@ -46,7 +46,10 @@ export const updateProfileSchema = z.object({
   priceFrom: z.number().int().positive().optional(),
   telegram: z.string().optional(),
   whatsapp: z.string().optional(),
-  emailContact: z.string().email().optional(),
+  emailContact: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.string().email("Некорректный email").optional()
+  ),
   role: z.enum(["SELLER", "PERFORMER", "BOTH"]).optional(),
 });
 
