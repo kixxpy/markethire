@@ -34,7 +34,15 @@ export const loginSchema = z.object({
  * Схема валидации для обновления профиля
  */
 export const updateProfileSchema = z.object({
-  name: z.string().min(2).optional(),
+  name: z.preprocess(
+    (val) => {
+      if (typeof val === "string" && val.trim().length >= 2) {
+        return val.trim();
+      }
+      return undefined;
+    },
+    z.string().min(2, "Имя должно содержать минимум 2 символа").optional()
+  ),
   username: z
     .string()
     .min(3, "Никнейм должен содержать минимум 3 символа")

@@ -69,9 +69,10 @@ export default function ProfilePage() {
     try {
       setError(null);
       setSuccess(false);
-      const updated = await api.patch('/api/users/me', data);
-      updateUser(updated);
-      setProfile(updated);
+      const response = await api.patch('/api/users/me', data);
+      // Используем response.user вместо response, так как API возвращает { message, user }
+      updateUser(response.user);
+      setProfile(response.user);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
@@ -169,11 +170,11 @@ export default function ProfilePage() {
 
           {/* Аватар */}
           <div className="flex flex-col items-center gap-4 mb-6">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-24 w-24 rounded-lg overflow-hidden">
               {avatarPreview && (
                 <AvatarImage src={avatarPreview} alt={getDisplayName(profile?.username, profile?.email)} />
               )}
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="text-2xl rounded-lg">
                 {getDisplayName(profile?.username, profile?.email).charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
