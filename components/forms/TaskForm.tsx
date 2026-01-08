@@ -89,7 +89,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
         toast.success('Задача обновлена');
       } else {
         await api.post('/api/tasks', data);
-        toast.success('Задача создана');
+        toast.success('Задача успешно создана и отправлена на модерацию. Вы получите уведомление после проверки администратором.');
       }
       router.push('/tasks/my');
     } catch (err: any) {

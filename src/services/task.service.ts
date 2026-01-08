@@ -12,6 +12,10 @@ export interface TaskWithRelations {
   budget: number | null;
   budgetType: BudgetType;
   status: TaskStatus;
+  moderationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  moderationComment?: string | null;
+  moderatedAt?: Date | null;
+  moderatedBy?: string | null;
   createdAt: Date;
   user: {
     id: string;
@@ -80,6 +84,7 @@ export async function createTask(
       description: data.description,
       budget: data.budget ?? null,
       budgetType: data.budgetType,
+      moderationStatus: "PENDING",
       tags: data.tagIds && data.tagIds.length > 0 ? {
         create: data.tagIds.map(tagId => ({ tagId })),
       } : undefined,
@@ -117,10 +122,28 @@ export async function createTask(
     },
   });
 
-  return {
+  const result = {
     ...task,
+    moderationStatus: task.moderationStatus || "PENDING",
     tags: task.tags.map(tt => tt.tag),
   };
+
+  // Создание уведомления о том, что задача отправлена на модерацию
+  try {
+    const { createNotification } = await import('./notification.service');
+    await createNotification({
+      userId,
+      type: 'TASK_PENDING_MODERATION',
+      role: 'SELLER',
+      title: 'Задача отправлена на модерацию',
+      message: `Ваша задача "${task.title}" отправлена на проверку администратору. Она будет опубликована после одобрения.`,
+      link: `/tasks/${task.id}`,
+    });
+  } catch (error) {
+    console.error('Ошибка создания уведомления:', error);
+  }
+
+  return result;
 }
 
 /**
@@ -143,7 +166,13 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
   const skip = (page - 1) * limit;
 
   // Построение условий фильтрации
-  const where: any = {};
+  // Показываем одобренные задачи или задачи без статуса (старые задачи)
+  // Исключаем только PENDING и REJECTED, что автоматически включит APPROVED и null
+  const where: any = {
+    moderationStatus: {
+      notIn: ["PENDING", "REJECTED"],
+    },
+  };
 
   if (categoryId) {
     where.categoryId = categoryId;
@@ -223,6 +252,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
   return {
     tasks: tasks.map(task => ({
       ...task,
+      moderationStatus: task.moderationStatus || "APPROVED",
       tags: task.tags.map(tt => tt.tag),
     })) as TaskWithRelations[],
     total,
@@ -277,6 +307,7 @@ export async function getTaskById(taskId: string): Promise<TaskWithRelations | n
 
   return {
     ...task,
+    moderationStatus: task.moderationStatus || "APPROVED", // Значение по умолчанию для старых задач
     tags: task.tags.map(tt => tt.tag),
   };
 }
@@ -413,6 +444,7 @@ export async function updateTask(
 
   return {
     ...task,
+    moderationStatus: task.moderationStatus || "APPROVED", // Значение по умолчанию для старых задач
     tags: task.tags.map(tt => tt.tag),
   };
 }
@@ -527,6 +559,7 @@ export async function closeTask(taskId: string, userId: string) {
 
   return {
     ...updatedTask,
+    moderationStatus: updatedTask.moderationStatus || "APPROVED",
     tags: updatedTask.tags.map(tt => tt.tag),
   };
 }
@@ -636,6 +669,7 @@ export async function getMyTasks(
   return {
     tasks: tasks.map(task => ({
       ...task,
+      moderationStatus: task.moderationStatus || "APPROVED",
       tags: task.tags.map(tt => tt.tag),
     })) as TaskWithRelations[],
     total,
@@ -687,4 +721,176 @@ export async function getTaskResponses(taskId: string, userId?: string) {
   });
 
   return responses;
+}
+
+/**
+ * Модерация задачи (одобрение/отклонение)
+ */
+export async function moderateTask(
+  taskId: string,
+  adminId: string,
+  action: "APPROVE" | "REJECT",
+  comment?: string
+) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!task) {
+    throw new Error("Задача не найдена");
+  }
+
+  if (task.moderationStatus !== "PENDING") {
+    throw new Error("Задача уже была промодерирована");
+  }
+
+  const moderationStatus = action === "APPROVE" ? "APPROVED" : "REJECTED";
+  
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      moderationStatus,
+      moderationComment: comment || null,
+      moderatedAt: new Date(),
+      moderatedBy: adminId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  // Создание уведомления для пользователя
+  try {
+    const { createNotification } = await import('./notification.service');
+    const notificationType = action === "APPROVE" 
+      ? 'TASK_APPROVED' 
+      : 'TASK_REJECTED';
+    const notificationTitle = action === "APPROVE"
+      ? 'Задача одобрена'
+      : 'Задача отклонена';
+    const notificationMessage = action === "APPROVE"
+      ? `Ваша задача "${task.title}" была одобрена и опубликована.`
+      : `Ваша задача "${task.title}" была отклонена.${comment ? ` Причина: ${comment}` : ''}`;
+
+    await createNotification({
+      userId: task.userId,
+      type: notificationType,
+      role: 'SELLER',
+      title: notificationTitle,
+      message: notificationMessage,
+      link: `/tasks/${taskId}`,
+    });
+  } catch (error) {
+    console.error('Ошибка создания уведомления:', error);
+  }
+
+  return {
+    ...updatedTask,
+    moderationStatus: updatedTask.moderationStatus || "APPROVED",
+    tags: updatedTask.tags.map(tt => tt.tag),
+  };
+}
+
+/**
+ * Получение задач на модерации (для администратора)
+ */
+export async function getPendingTasks(
+  page: number = 1,
+  limit: number = 20
+): Promise<PaginatedTasks> {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    moderationStatus: "PENDING",
+  };
+
+  const total = await prisma.task.count({ where });
+
+  const tasks = await prisma.task.findMany({
+    where,
+    skip,
+    take: limit,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+  });
+
+  return {
+    tasks: tasks.map(task => ({
+      ...task,
+      moderationStatus: task.moderationStatus || "APPROVED",
+      tags: task.tags.map(tt => tt.tag),
+    })) as TaskWithRelations[],
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 }

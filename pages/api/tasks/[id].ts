@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getTaskById, updateTask, deleteTask } from "../../../src/services/task.service";
 import { updateTaskSchema } from "../../../src/lib/validation";
-import { withAuth, AuthenticatedRequest } from "../../../src/middleware";
+import { withAuth, AuthenticatedRequest, isAdmin } from "../../../src/middleware";
 
 async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
@@ -17,6 +17,25 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
       if (!task) {
         return res.status(404).json({ error: "Задача не найдена" });
+      }
+
+      // Проверка прав доступа к задаче
+      // Неавторизованные пользователи могут видеть только одобренные задачи
+      if (!req.user) {
+        if (task.moderationStatus !== "APPROVED") {
+          return res.status(404).json({ error: "Задача не найдена" });
+        }
+      } else {
+        // Авторизованные пользователи могут видеть задачу если:
+        // - они владелец задачи
+        // - они администратор
+        // - задача одобрена
+        const isOwner = task.userId === req.user.userId;
+        const isAdminUser = isAdmin(req.user.role);
+        
+        if (!isOwner && !isAdminUser && task.moderationStatus !== "APPROVED") {
+          return res.status(404).json({ error: "Задача не найдена" });
+        }
       }
 
       return res.status(200).json(task);

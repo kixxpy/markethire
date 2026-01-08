@@ -34,6 +34,14 @@ export function Navbar() {
 
     if (!isAuthenticated) return baseLinks;
 
+    // Администратор
+    if (user?.role === 'ADMIN') {
+      return [
+        ...baseLinks,
+        { href: '/admin/dashboard', label: 'Панель администратора' },
+      ];
+    }
+
     if (activeMode === 'SELLER') {
       return [
         ...baseLinks,
@@ -85,20 +93,20 @@ export function Navbar() {
           </Link>
           
           {/* Desktop / Tablet Navigation */}
-          <ul className="hidden md:flex items-center gap-1 flex-wrap">
+          <ul className="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full">
             {navLinks.map((link) => (
-              <li key={link.href + link.label}>
+              <li key={link.href + link.label} className="flex-shrink-0">
                 <Link
                   href={link.href}
                   className={cn(
-                    "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                    "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
                     isActive(link.href)
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
-                  {link.icon && <span>{link.icon}</span>}
-                  {link.label}
+                  {link.icon && <span className="flex-shrink-0">{link.icon}</span>}
+                  <span className="truncate">{link.label}</span>
                 </Link>
               </li>
             ))}

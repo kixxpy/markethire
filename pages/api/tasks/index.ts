@@ -31,7 +31,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       const task = await createTask(req.user.userId, validatedData);
 
       return res.status(201).json({
-        message: "Задача успешно создана",
+        message: "Задача успешно создана и отправлена на модерацию",
         task,
       });
     }

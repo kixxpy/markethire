@@ -1,9 +1,35 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../src/lib/auth";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Начало сидинга базы данных...");
+
+  // Создание администратора
+  console.log("👤 Создание администратора...");
+  const adminEmail = "ekn62@bk.ru";
+  const adminPassword = "Apap19091992";
+  
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+
+  if (!existingAdmin) {
+    const hashedPassword = await hashPassword(adminPassword);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        username: "admin",
+        password: hashedPassword,
+        name: "Администратор",
+        role: "ADMIN",
+      },
+    });
+    console.log("✅ Администратор создан");
+  } else {
+    console.log("ℹ️  Администратор уже существует");
+  }
 
   // Очистка существующих данных (опционально, для перезапуска)
   console.log("🧹 Очистка существующих данных...");

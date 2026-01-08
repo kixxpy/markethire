@@ -9,6 +9,7 @@ export type {
   Marketplace,
   BudgetType,
   TaskStatus,
+  TaskModerationStatus,
 } from "@prisma/client";
 
 // Типы для аутентификации

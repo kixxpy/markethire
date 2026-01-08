@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { api } from '../../src/api/client';
-import { Task, Category, Marketplace, TaskStatus } from '@prisma/client';
+import { Task, Category, Marketplace, TaskStatus, TaskModerationStatus } from '@prisma/client';
 import ResponseForm from '../../components/forms/ResponseForm';
 import { useAuthStore } from '../../src/store/authStore';
 import Link from 'next/link';
@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { Skeleton } from '../../components/ui/skeleton';
+import { Badge } from '../../components/ui/badge';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { cn } from '../../src/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +28,8 @@ import { getDisplayName } from '../../src/lib/utils';
 
 interface TaskWithRelations extends Task {
   category: Category;
+  moderationStatus?: TaskModerationStatus;
+  moderationComment?: string | null;
   user: {
     id: string;
     username: string | null;
@@ -58,6 +63,18 @@ const marketplaceLabels: Record<Marketplace, string> = {
 const statusLabels: Record<TaskStatus, string> = {
   OPEN: 'Открыта',
   CLOSED: 'Закрыта',
+};
+
+const moderationStatusLabels: Record<TaskModerationStatus, string> = {
+  PENDING: 'На модерации',
+  APPROVED: 'Одобрена',
+  REJECTED: 'Отклонена',
+};
+
+const moderationStatusColors: Record<TaskModerationStatus, string> = {
+  PENDING: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
+  APPROVED: 'bg-green-500/10 text-green-700 border-green-500/20',
+  REJECTED: 'bg-red-500/10 text-red-700 border-red-500/20',
 };
 
 export default function TaskDetailPage() {
@@ -145,7 +162,17 @@ export default function TaskDetailPage() {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-4">{task.title}</CardTitle>
+              <div className="flex items-center gap-2 mb-4">
+                <CardTitle className="text-2xl">{task.title}</CardTitle>
+                {task.moderationStatus && (
+                  <Badge
+                    variant="outline"
+                    className={cn(moderationStatusColors[task.moderationStatus])}
+                  >
+                    {moderationStatusLabels[task.moderationStatus]}
+                  </Badge>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                 <span>{marketplaceLabels[task.marketplace]}</span>
                 <span>{task.category.name}</span>
@@ -214,6 +241,28 @@ export default function TaskDetailPage() {
           </div>
 
           <Separator />
+
+          {isOwner && task.moderationStatus === 'REJECTED' && task.moderationComment && (
+            <>
+              <Alert variant="destructive">
+                <AlertDescription>
+                  <strong>Задача отклонена:</strong> {task.moderationComment}
+                </AlertDescription>
+              </Alert>
+              <Separator />
+            </>
+          )}
+
+          {isOwner && task.moderationStatus === 'PENDING' && (
+            <>
+              <Alert>
+                <AlertDescription>
+                  Ваша задача находится на модерации. Она будет опубликована после одобрения администратором.
+                </AlertDescription>
+              </Alert>
+              <Separator />
+            </>
+          )}
 
           <p className="text-sm text-muted-foreground">
             Создано: {new Date(task.createdAt).toLocaleDateString('ru-RU', {

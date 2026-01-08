@@ -137,3 +137,22 @@ export function isSeller(role: UserRole): boolean {
 export function isPerformer(role: UserRole): boolean {
   return role === "PERFORMER" || role === "BOTH";
 }
+
+/**
+ * Проверка, является ли пользователь администратором
+ */
+export function isAdmin(role: UserRole): boolean {
+  return role === "ADMIN";
+}
+
+/**
+ * Middleware для проверки прав администратора
+ */
+export function withAdmin(
+  handler: (
+    req: AuthenticatedRequest,
+    res: NextApiResponse
+  ) => Promise<void> | void
+) {
+  return withRole(["ADMIN"], handler);
+}
