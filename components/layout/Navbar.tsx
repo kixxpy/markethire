@@ -11,7 +11,8 @@ import {
   User, 
   LogOut, 
   Briefcase, 
-  ShoppingBag
+  ShoppingBag,
+  FileText
 } from 'lucide-react';
 import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
@@ -65,6 +66,11 @@ export function Navbar() {
       href: '/tasks/executor', 
       label: 'Услуги исполнителей', 
       icon: <ShoppingBag className="h-4 w-4" />
+    },
+    { 
+      href: '/vacancies', 
+      label: 'Вакансии и резюме', 
+      icon: <FileText className="h-4 w-4" />
     },
   ] : [];
 
