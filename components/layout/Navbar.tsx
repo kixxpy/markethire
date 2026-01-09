@@ -56,7 +56,7 @@ export function Navbar() {
   const navLinks = getNavLinks();
 
   // Ссылки для шапки профиля (Задачи продавцов и Услуги исполнителей)
-  const profileHeaderLinks = isAuthenticated ? [
+  const profileHeaderLinks = [
     { 
       href: '/tasks/seller', 
       label: 'Задачи продавцов', 
@@ -72,7 +72,7 @@ export function Navbar() {
       label: 'Вакансии и резюме', 
       icon: <FileText className="h-4 w-4" />
     },
-  ] : [];
+  ];
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
