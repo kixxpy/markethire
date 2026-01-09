@@ -6,13 +6,19 @@ import { useState } from 'react';
 import { useAuthStore } from '../../src/store/authStore';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { Menu, User, LogOut } from 'lucide-react';
+import { 
+  Menu, 
+  User, 
+  LogOut, 
+  Briefcase, 
+  ShoppingBag
+} from 'lucide-react';
 import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Navbar() {
-  const { user, isAuthenticated, logout, activeMode } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
   const currentPath = router.pathname;
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -30,11 +36,7 @@ export function Navbar() {
   };
 
   const getNavLinks = () => {
-    const baseLinks = [
-      { href: '/', label: 'Главная' },
-      { href: '/tasks/seller', label: 'Задачи продавцов' },
-      { href: '/tasks/executor', label: 'Услуги исполнителей' },
-    ];
+    const baseLinks: Array<{ href: string; label: string; icon?: React.ReactNode }> = [];
 
     if (!isAuthenticated) return baseLinks;
 
@@ -46,27 +48,25 @@ export function Navbar() {
       ];
     }
 
-    if (activeMode === 'SELLER') {
-      return [
-        ...baseLinks,
-        { href: '/seller/dashboard', label: 'Панель управления' },
-        { href: '/seller/tasks', label: 'Мои задачи' },
-        { href: '/tasks/create', label: 'Создать задачу' },
-      ];
-    } else if (activeMode === 'PERFORMER') {
-      return [
-        ...baseLinks,
-        { href: '/executor/dashboard', label: 'Панель управления' },
-        { href: '/executor/tasks', label: 'Мои задачи' },
-        { href: '/executor/services', label: 'Мои услуги' },
-        { href: '/executor/responses', label: 'Мои отклики' },
-      ];
-    }
-
+    // Для seller и performer навигация теперь в отдельных блоках
     return baseLinks;
   };
 
   const navLinks = getNavLinks();
+
+  // Ссылки для шапки профиля (Задачи продавцов и Услуги исполнителей)
+  const profileHeaderLinks = isAuthenticated ? [
+    { 
+      href: '/tasks/seller', 
+      label: 'Задачи продавцов', 
+      icon: <Briefcase className="h-4 w-4" />
+    },
+    { 
+      href: '/tasks/executor', 
+      label: 'Услуги исполнителей', 
+      icon: <ShoppingBag className="h-4 w-4" />
+    },
+  ] : [];
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -97,31 +97,55 @@ export function Navbar() {
             </svg>
           </Link>
           
-          {/* Desktop / Tablet Navigation */}
-          <ul className="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full">
-            {navLinks.map((link) => (
-              <li key={link.href + link.label} className="flex-shrink-0">
-                <Link
-                  href={link.href}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                    isActive(link.href)
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  {link.icon && <span className="flex-shrink-0">{link.icon}</span>}
-                  <span className="truncate">{link.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {/* Desktop / Tablet Navigation для остальных ссылок */}
+          {navLinks.length > 0 && (
+            <ul className="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full">
+              {navLinks.map((link) => (
+                <li key={link.href + link.label} className="flex-shrink-0">
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                      isActive(link.href)
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    {link.icon && <span className="flex-shrink-0">{link.icon}</span>}
+                    <span className="truncate">{link.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
           {isAuthenticated ? (
             <>
               <NotificationCenter />
+              
+              {/* Ссылки для шапки профиля */}
+              {profileHeaderLinks.length > 0 && (
+                <div className="hidden md:flex items-center gap-1 lg:gap-2">
+                  {profileHeaderLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                        isActive(link.href)
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <span className="flex-shrink-0">{link.icon}</span>
+                      <span className="hidden lg:inline truncate">{link.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              
               <RoleSwitcher />
               <Link
                 href="/profile"
@@ -193,24 +217,50 @@ export function Navbar() {
                     <RoleSwitcher />
                   </div>
                 )}
-                <nav className="flex flex-col gap-2">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href + link.label}
-                      href={link.href}
-                      onClick={() => setIsSheetOpen(false)}
-                      className={cn(
-                        "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                        isActive(link.href)
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      )}
-                    >
-                      {link.icon && <span className="mr-2">{link.icon}</span>}
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
+                
+                {/* Ссылки для шапки профиля в мобильном меню */}
+                {profileHeaderLinks.length > 0 && (
+                  <nav className="flex flex-col gap-2 pb-2 border-b">
+                    {profileHeaderLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsSheetOpen(false)}
+                        className={cn(
+                          "px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center",
+                          isActive(link.href)
+                            ? "bg-accent text-accent-foreground"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        <span className="mr-2 inline-flex">{link.icon}</span>
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+                )}
+
+                {/* Остальные ссылки навигации */}
+                {navLinks.length > 0 && (
+                  <nav className="flex flex-col gap-2">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.href + link.label}
+                        href={link.href}
+                        onClick={() => setIsSheetOpen(false)}
+                        className={cn(
+                          "px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center",
+                          isActive(link.href)
+                            ? "bg-accent text-accent-foreground"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        {link.icon && <span className="mr-2 inline-flex">{link.icon}</span>}
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+                )}
                 {isAuthenticated && (
                   <Link
                     href="/profile"
