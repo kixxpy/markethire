@@ -75,7 +75,7 @@ export function ModeNavigation() {
       <div className="container mx-auto px-2 sm:px-4">
         {/* Блок навигации для SELLER режима */}
         {activeMode === 'SELLER' && sellerNavLinks.length > 0 && (
-          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-seller-accent/30 border-[0.5px] border-seller-border rounded-lg px-2 lg:px-3 py-2 my-2">
+          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-seller-accent/30 rounded-lg px-2 lg:px-3 py-2 my-2">
             <ul className="flex items-center gap-1 lg:gap-2 flex-wrap">
               {sellerNavLinks.map((link) => (
                 <li key={link.href + link.label} className="flex-shrink-0">
@@ -99,7 +99,7 @@ export function ModeNavigation() {
 
         {/* Блок навигации для PERFORMER режима */}
         {activeMode === 'PERFORMER' && performerNavLinks.length > 0 && (
-          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-executor-accent/30 border-[0.5px] border-executor-border rounded-lg px-2 lg:px-3 py-2 my-2">
+          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-executor-accent/30 rounded-lg px-2 lg:px-3 py-2 my-2">
             <ul className="flex items-center gap-1 lg:gap-2 flex-wrap">
               {performerNavLinks.map((link) => (
                 <li key={link.href + link.label} className="flex-shrink-0">
