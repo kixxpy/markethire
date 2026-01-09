@@ -18,16 +18,29 @@ import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import { Logo } from './Logo';
+import { AuthModal } from '../auth/AuthModal';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
   const currentPath = router.pathname;
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
 
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  const openLoginModal = () => {
+    setAuthModalMode('login');
+    setAuthModalOpen(true);
+  };
+
+  const openRegisterModal = () => {
+    setAuthModalMode('register');
+    setAuthModalOpen(true);
   };
 
   const isActive = (path: string) => {
@@ -152,11 +165,11 @@ export function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-1 sm:gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Войти</Link>
+              <Button variant="ghost" size="sm" onClick={openLoginModal}>
+                Войти
               </Button>
-              <Button size="sm" asChild>
-                <Link href="/register">Регистрация</Link>
+              <Button size="sm" onClick={openRegisterModal}>
+                Регистрация
               </Button>
             </div>
           )}
@@ -241,11 +254,26 @@ export function Navbar() {
                     </div>
                   </Link>
                 )}
+                {!isAuthenticated && (
+                  <div className="flex flex-col gap-2 mt-2 pt-4 border-t">
+                    <Button variant="ghost" onClick={() => { setIsSheetOpen(false); openLoginModal(); }}>
+                      Войти
+                    </Button>
+                    <Button onClick={() => { setIsSheetOpen(false); openRegisterModal(); }}>
+                      Регистрация
+                    </Button>
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+      <AuthModal 
+        open={authModalOpen} 
+        onOpenChange={setAuthModalOpen}
+        defaultMode={authModalMode}
+      />
     </nav>
   );
 }

@@ -16,7 +16,11 @@ type LoginFormData = {
   password: string;
 };
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export default function LoginForm({ onSuccess }: LoginFormProps) {
   const { login } = useAuthStore();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +42,7 @@ export default function LoginForm() {
 
       login(response.user, response.token);
       toast.success('Успешный вход');
+      onSuccess?.();
       router.push('/');
     } catch (err: any) {
       toast.error(err.message || 'Ошибка входа');

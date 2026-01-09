@@ -1,10 +1,26 @@
+import { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { AuthModal } from '../components/auth/AuthModal';
 
 export default function Home() {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const openLoginModal = () => {
+    setAuthModalMode('login');
+    setAuthModalOpen(true);
+  };
+
+  const openRegisterModal = () => {
+    setAuthModalMode('register');
+    setAuthModalOpen(true);
+  };
+
   return (
-    <div className="space-y-12">
+    <>
+      <div className="space-y-12">
       <section className="grid gap-10 lg:grid-cols-2 items-center">
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
@@ -87,17 +103,23 @@ export default function Home() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Быстрый старт</h2>
         <div className="flex flex-wrap gap-4">
-          <Button asChild variant="outline">
-            <Link href="/register">Зарегистрироваться</Link>
+          <Button variant="outline" onClick={openRegisterModal}>
+            Зарегистрироваться
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/login">Войти</Link>
+          <Button variant="outline" onClick={openLoginModal}>
+            Войти
           </Button>
           <Button asChild variant="outline">
             <Link href="/tasks/create">Создать задачу</Link>
           </Button>
         </div>
       </section>
-    </div>
+      </div>
+      <AuthModal 
+        open={authModalOpen} 
+        onOpenChange={setAuthModalOpen}
+        defaultMode={authModalMode}
+      />
+    </>
   );
 }

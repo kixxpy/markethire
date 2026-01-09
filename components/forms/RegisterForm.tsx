@@ -18,7 +18,11 @@ type RegisterFormData = {
   name?: string;
 };
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  onSuccess?: () => void;
+}
+
+export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   const { login } = useAuthStore();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -48,6 +52,7 @@ export default function RegisterForm() {
 
       login(response.user, response.token);
       toast.success('Регистрация успешна');
+      onSuccess?.();
       router.push('/seller/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Ошибка регистрации');
