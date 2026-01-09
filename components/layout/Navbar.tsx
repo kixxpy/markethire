@@ -97,6 +97,27 @@ export function Navbar() {
             </svg>
           </Link>
           
+          {/* Ссылки для шапки профиля - перенесены рядом с логотипом */}
+          {profileHeaderLinks.length > 0 && (
+            <div className="hidden md:flex items-center gap-1 lg:gap-2">
+              {profileHeaderLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                    isActive(link.href)
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <span className="flex-shrink-0">{link.icon}</span>
+                  <span className="hidden lg:inline truncate">{link.label}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+          
           {/* Desktop / Tablet Navigation для остальных ссылок */}
           {navLinks.length > 0 && (
             <ul className="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full">
@@ -124,27 +145,6 @@ export function Navbar() {
           {isAuthenticated ? (
             <>
               <NotificationCenter />
-              
-              {/* Ссылки для шапки профиля */}
-              {profileHeaderLinks.length > 0 && (
-                <div className="hidden md:flex items-center gap-1 lg:gap-2">
-                  {profileHeaderLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                        isActive(link.href)
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      )}
-                    >
-                      <span className="flex-shrink-0">{link.icon}</span>
-                      <span className="hidden lg:inline truncate">{link.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
               
               <RoleSwitcher />
               <Link
