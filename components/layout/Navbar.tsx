@@ -17,6 +17,7 @@ import {
 import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationCenter } from '../notifications/NotificationCenter';
+import { Logo } from './Logo';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -78,30 +79,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 sm:h-16 items-center justify-between gap-2 px-2 sm:px-4">
         <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-base sm:text-xl font-bold text-foreground hover:text-primary transition-colors whitespace-nowrap"
-          >
-            <svg 
-              width="120" 
-              height="28" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-7 sm:h-8 w-auto"
-              viewBox="0 0 300 70"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <text 
-                x="0" 
-                y="50"
-                fontFamily="Verdana, sans-serif"
-                fontSize="48"
-                fontWeight="700"
-                fill="currentColor"
-              >
-                Markethire
-              </text>
-            </svg>
-          </Link>
+          <Logo size="md" className="flex-shrink-0" />
           
           {/* Ссылки для шапки профиля - перенесены рядом с логотипом */}
           {profileHeaderLinks.length > 0 && (
@@ -193,31 +171,11 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px]">
               <div className="flex flex-col gap-4 mt-6">
-                <Link
-                  href="/"
+                <Logo 
+                  size="md" 
+                  variant="minimal" 
                   onClick={() => setIsSheetOpen(false)}
-                  className="flex items-center gap-2 text-xl font-bold"
-                >
-                  <svg 
-                    width="120" 
-                    height="28" 
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-7 w-auto"
-                    viewBox="0 0 300 70"
-                    preserveAspectRatio="xMidYMid meet"
-                  >
-                    <text 
-                      x="0" 
-                      y="50"
-                      fontFamily="Verdana, sans-serif"
-                      fontSize="48"
-                      fontWeight="700"
-                      fill="currentColor"
-                    >
-                      Markethire
-                    </text>
-                  </svg>
-                </Link>
+                />
                 {isAuthenticated && (
                   <div className="pb-2 border-b">
                     <RoleSwitcher />
