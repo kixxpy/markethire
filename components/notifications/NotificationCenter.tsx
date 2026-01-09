@@ -17,6 +17,7 @@ import { Button } from '../ui/button';
 import { Bell, Check } from 'lucide-react';
 import { UserRole } from '@prisma/client';
 import { cn } from '../../src/lib/utils';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -42,6 +43,7 @@ export function NotificationCenter() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [checkingTask, setCheckingTask] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -96,11 +98,52 @@ export function NotificationCenter() {
     }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) {
-      handleMarkAsRead(notification.id);
-    }
-    if (notification.link) {
+  const handleNotificationClick = async (notification: Notification) => {
+    if (!notification.link) return;
+
+    // Проверяем, ведет ли ссылка на задачу
+    const taskLinkMatch = notification.link.match(/^\/tasks\/([^\/]+)/);
+    
+    if (taskLinkMatch) {
+      const taskId = taskLinkMatch[1];
+      setCheckingTask(notification.id);
+      
+      try {
+        // Проверяем существование задачи перед переходом
+        await api.get(`/api/tasks/${taskId}`);
+        
+        // Задача существует, выполняем переход
+        if (!notification.read) {
+          await handleMarkAsRead(notification.id);
+        }
+        router.push(notification.link);
+        setOpen(false);
+      } catch (error: any) {
+        // Задача не найдена или произошла ошибка
+        const errorMessage = error?.message || 'Ошибка при проверке задачи';
+        
+        if (errorMessage.includes('не найдена') || errorMessage.includes('404')) {
+          toast.error('Задача была удалена или больше не существует');
+          
+          // Помечаем уведомление как прочитанное
+          if (!notification.read) {
+            await handleMarkAsRead(notification.id);
+          }
+          
+          // Удаляем уведомление из списка, так как оно больше не актуально
+          setNotifications(prev => prev.filter(n => n.id !== notification.id));
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        } else {
+          toast.error('Не удалось открыть задачу. Попробуйте позже');
+        }
+      } finally {
+        setCheckingTask(null);
+      }
+    } else {
+      // Для других ссылок выполняем обычный переход без проверки
+      if (!notification.read) {
+        handleMarkAsRead(notification.id);
+      }
       router.push(notification.link);
       setOpen(false);
     }
@@ -163,13 +206,14 @@ export function NotificationCenter() {
                 key={notification.id}
                 className={cn(
                   "p-4 rounded-lg border cursor-pointer transition-colors",
+                  checkingTask === notification.id && "opacity-50 cursor-wait",
                   notification.read
                     ? "bg-muted/50 hover:bg-muted"
                     : "bg-seller-accent/30 border-seller-border hover:bg-seller-accent/50",
                   notification.role === 'PERFORMER' && !notification.read &&
                     "bg-executor-accent/30 border-executor-border hover:bg-executor-accent/50"
                 )}
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => !checkingTask && handleNotificationClick(notification)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">

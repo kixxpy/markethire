@@ -88,10 +88,18 @@ export default function TaskDetailPage() {
 
   const loadTask = async () => {
     try {
+      setLoading(true);
       const data = await api.get<TaskWithRelations>(`/api/tasks/${id}`);
       setTask(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка загрузки задачи:', error);
+      const errorMessage = error?.message || 'Ошибка загрузки задачи';
+      
+      if (errorMessage.includes('не найдена') || errorMessage.includes('404')) {
+        toast.error('Задача не найдена или была удалена');
+      } else {
+        toast.error('Не удалось загрузить задачу');
+      }
     } finally {
       setLoading(false);
     }
