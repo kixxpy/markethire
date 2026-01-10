@@ -25,6 +25,12 @@
   align-items: center;
 }
 
+.mobileAdBlock {
+  display: none;
+  margin-top: 16px;
+  width: 100%;
+}
+
 .searchWrapper > :first-child {
   flex: 1;
   min-width: 0;
@@ -76,6 +82,10 @@
     max-width: 1600px;
   }
 
+  .mobileAdBlock {
+    display: none;
+  }
+
   .sidebar {
     display: block;
   }
@@ -83,6 +93,10 @@
 
 /* Desktop (1280px - 1439px) */
 @media (min-width: 1280px) and (max-width: 1439px) {
+  .mobileAdBlock {
+    display: none;
+  }
+
   .sidebar {
     display: block;
   }
@@ -94,13 +108,18 @@
     gap: 20px;
   }
 
-  .sidebar {
+  .mobileAdBlock {
     display: none;
+  }
+
+  .sidebar {
+    display: block;
+    width: 240px;
   }
 }
 
-/* Tablet (768px - 1023px) */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Tablet (768px - 1019px) */
+@media (min-width: 768px) and (max-width: 1019px) {
   .container {
     padding: 0 16px;
   }
@@ -112,6 +131,30 @@
   .content {
     flex-direction: column;
     gap: 20px;
+  }
+
+  .mobileAdBlock {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mainContent {
+    order: 1;
+  }
+}
+
+/* Tablet (1020px - 1023px) */
+@media (min-width: 1020px) and (max-width: 1023px) {
+  .content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .mobileAdBlock {
+    display: none;
   }
 
   .sidebar {
@@ -157,10 +200,12 @@
     margin-top: 24px;
   }
 
-  .sidebar {
-    width: 100%;
+  .mobileAdBlock {
     display: block;
-    order: 2;
+  }
+
+  .sidebar {
+    display: none;
   }
 
   .mainContent {
@@ -185,5 +230,10 @@
 
   .pagination {
     margin-top: 20px;
+  }
+
+  .mobileAdBlock {
+    display: block;
+    margin-top: 12px;
   }
 }
