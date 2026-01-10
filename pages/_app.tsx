@@ -2,6 +2,7 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { Inter } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "../styles/globals.css";
 import Layout from "../components/common/Layout";
 import { useAuthStore } from "../src/store/authStore";
@@ -48,11 +49,16 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router, activeMode]);
 
   return (
-    <>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange={false}
+    >
       <Layout>
         <Component {...pageProps} />
         <Toaster position="top-right" />
       </Layout>
-    </>
+    </ThemeProvider>
   );
 }

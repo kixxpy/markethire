@@ -19,6 +19,7 @@ import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import { Logo } from './Logo';
 import { AuthModal } from '../auth/AuthModal';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -141,6 +142,7 @@ export function Navbar() {
         <div className="flex items-center gap-2 sm:gap-4">
           {isAuthenticated ? (
             <>
+              <ThemeToggle />
               <NotificationCenter />
               
               <RoleSwitcher />
@@ -165,6 +167,7 @@ export function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-1 sm:gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="sm" onClick={openLoginModal}>
                 Войти
               </Button>

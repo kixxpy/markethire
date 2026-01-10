@@ -67,6 +67,10 @@ module.exports = {
           border: "hsl(var(--executor-border))",
         },
       },
+      backgroundImage: {
+        'gradient-purple': 'linear-gradient(135deg, hsl(var(--gradient-from)), hsl(var(--gradient-to)))',
+        'gradient-purple-dark': 'linear-gradient(135deg, hsl(var(--gradient-dark-from)), hsl(var(--gradient-dark-to)))',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
