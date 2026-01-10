@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 
 export default function CreateTaskPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, activeMode } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -18,12 +18,16 @@ export default function CreateTaskPage() {
     return null;
   }
 
+  // Определяем текст в зависимости от режима
+  const pageTitle = activeMode === 'PERFORMER' ? 'Создать услугу' : 'Создать задачу';
+  const cardTitle = activeMode === 'PERFORMER' ? 'Новая услуга' : 'Новая задача';
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Создать задачу</h1>
+      <h1 className="text-3xl font-bold">{pageTitle}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Новая задача</CardTitle>
+          <CardTitle>{cardTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <TaskForm />
