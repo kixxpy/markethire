@@ -25,6 +25,7 @@ import {
 } from '../../components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { getDisplayName } from '../../src/lib/utils';
+import styles from './[id].module.css';
 
 interface TaskWithRelations extends Task {
   category: Category;
@@ -237,13 +238,13 @@ export default function TaskDetailPage() {
           {/* Галерея изображений */}
           {hasImages && (
             <>
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
+              <div className={`relative w-full ${styles.imageGallery}`}>
                 <Image
                   src={images[currentImageIndex]}
                   alt={`${task.title} - изображение ${currentImageIndex + 1}`}
                   fill
                   className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 80vw"
+                  sizes="(max-width: 768px) 100vw, 600px"
                 />
                 
                 {/* Стрелки навигации */}
@@ -251,32 +252,32 @@ export default function TaskDetailPage() {
                   <>
                     <button
                       onClick={handlePreviousImage}
-                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-all z-10"
+                      className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-all z-10 shadow-lg"
                       aria-label="Предыдущее изображение"
                     >
-                      <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                     <button
                       onClick={handleNextImage}
-                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-all z-10"
+                      className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-all z-10 shadow-lg"
                       aria-label="Следующее изображение"
                     >
-                      <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </>
                 )}
                 
                 {/* Индикаторы (точки) */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                     {images.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
+                        className={`h-1.5 rounded-full transition-all ${
                           index === currentImageIndex
                             ? 'bg-primary w-6'
-                            : 'bg-white/50 hover:bg-white/70'
+                            : 'bg-white/60 hover:bg-white/80 w-1.5'
                         }`}
                         aria-label={`Изображение ${index + 1}`}
                       />
@@ -287,15 +288,13 @@ export default function TaskDetailPage() {
               
               {/* Миниатюры */}
               {images.length > 1 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                <div className={styles.thumbnails}>
                   {images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex
-                          ? 'border-primary'
-                          : 'border-transparent opacity-60 hover:opacity-100'
+                      className={`${styles.thumbnail} ${
+                        index === currentImageIndex ? styles.thumbnailActive : ''
                       }`}
                     >
                       <Image
@@ -303,7 +302,7 @@ export default function TaskDetailPage() {
                         alt={`Миниатюра ${index + 1}`}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                        sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
                       />
                     </button>
                   ))}
