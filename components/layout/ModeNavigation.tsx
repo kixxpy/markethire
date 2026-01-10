@@ -54,13 +54,18 @@ export function ModeNavigation() {
       },
       { 
         href: '/executor/tasks', 
-        label: 'Мои задачи', 
+        label: 'Мои услуги', 
         icon: <ClipboardList className="h-4 w-4" />
       },
       { 
         href: '/executor/responses', 
         label: 'Мои отклики', 
         icon: <MessageSquare className="h-4 w-4" />
+      },
+      { 
+        href: '/tasks/create', 
+        label: 'Добавить услугу', 
+        icon: <Plus className="h-4 w-4" />
       },
     ];
   };

@@ -74,11 +74,11 @@ export default function ExecutorTasksPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Мои задачи (как исполнитель)</h1>
+          <h1 className="text-3xl font-bold">Мои услуги (как исполнитель)</h1>
           <TaskPagesSwitcher />
         </div>
         <Button asChild>
-          <Link href="/tasks/create">Создать задачу</Link>
+          <Link href="/tasks/create">Создать услугу</Link>
         </Button>
       </div>
 
@@ -91,9 +91,9 @@ export default function ExecutorTasksPage() {
       ) : tasks.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">Здесь будут ваши задачи, созданные в режиме исполнителя</p>
+            <p className="text-muted-foreground">Здесь будут ваши услуги, созданные в режиме исполнителя</p>
             <Button asChild>
-              <Link href="/tasks/create">Создать первую задачу</Link>
+              <Link href="/tasks/create">Создать первую услугу</Link>
             </Button>
           </CardContent>
         </Card>
