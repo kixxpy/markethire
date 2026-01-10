@@ -65,9 +65,8 @@ export const updateProfileSchema = z.object({
  * Схема валидации для создания задачи
  */
 export const createTaskSchema = z.object({
-  marketplace: z.enum(["WB", "OZON"], {
-    errorMap: () => ({ message: "Маркетплейс должен быть WB или OZON" }),
-  }),
+  marketplace: z.array(z.enum(["WB", "OZON", "YANDEX_MARKET", "LAMODA"]))
+    .min(1, "Необходимо выбрать хотя бы один маркетплейс"),
   categoryId: z.string().min(1, "Категория обязательна"),
   title: z.string().min(3, "Заголовок должен содержать минимум 3 символа"),
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
@@ -75,14 +74,16 @@ export const createTaskSchema = z.object({
   budgetType: z.enum(["FIXED", "NEGOTIABLE"]).default("FIXED"),
   tagIds: z.array(z.string()).optional(),
   createdInMode: z.enum(["SELLER", "PERFORMER"]).optional(),
-  images: z.array(z.string().url()).max(3, "Максимум 3 изображения").optional(),
+  images: z.array(z.string()).max(3, "Максимум 3 изображения").optional(),
 });
 
 /**
  * Схема валидации для обновления задачи
  */
 export const updateTaskSchema = z.object({
-  marketplace: z.enum(["WB", "OZON"]).optional(),
+  marketplace: z.array(z.enum(["WB", "OZON", "YANDEX_MARKET", "LAMODA"]))
+    .min(1, "Необходимо выбрать хотя бы один маркетплейс")
+    .optional(),
   categoryId: z.string().optional(),
   title: z.string().min(3).optional(),
   description: z.string().min(10).optional(),
@@ -100,7 +101,7 @@ export const taskFiltersSchema = z.object({
   tagIds: z.string().optional().transform((val) => 
     val ? val.split(",").filter(Boolean) : undefined
   ),
-  marketplace: z.enum(["WB", "OZON"]).optional(),
+  marketplace: z.enum(["WB", "OZON", "YANDEX_MARKET", "LAMODA"]).optional(),
   status: z.enum(["OPEN", "CLOSED"]).optional(),
   budgetMin: z.string().optional().transform((val) => 
     val ? parseInt(val, 10) : undefined
