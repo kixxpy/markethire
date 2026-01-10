@@ -173,3 +173,15 @@ model Notification {
   @@index([userId, read])
   @@index([userId, role])
 }
+
+model Ad {
+  id        String   @id @default(cuid())
+  imageUrl  String   // URL изображения рекламы
+  link      String?  // Ссылка для перехода при клике
+  position  Int      @default(0) // Позиция для сортировки
+  isActive  Boolean  @default(true) // Активна ли реклама
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, position])
+}

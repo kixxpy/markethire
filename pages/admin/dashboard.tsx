@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Textarea } from '../../components/ui/textarea';
-import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2, BarChart3, FolderTree } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2, BarChart3, FolderTree, Image as ImageIcon, Plus, Edit, Upload } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
 import {
   AlertDialog,
@@ -19,6 +19,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../../components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 
 interface Task {
@@ -50,7 +57,17 @@ interface Stats {
   categories: { total: number };
 }
 
-type TabType = 'moderation' | 'users' | 'categories' | 'analytics';
+type TabType = 'moderation' | 'users' | 'categories' | 'analytics' | 'ads';
+
+interface Ad {
+  id: string;
+  imageUrl: string;
+  link: string | null;
+  position: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuthStore();
@@ -60,6 +77,16 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [revisionComments, setRevisionComments] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<TabType>('moderation');
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [editingAd, setEditingAd] = useState<Ad | null>(null);
+  const [isAdFormOpen, setIsAdFormOpen] = useState(false);
+  const [adFormData, setAdFormData] = useState({
+    imageUrl: '',
+    link: '',
+    position: 0,
+    isActive: true,
+  });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -69,6 +96,12 @@ export default function AdminDashboard() {
 
     loadData();
   }, [isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (activeTab === 'ads') {
+      loadAds();
+    }
+  }, [activeTab]);
 
   const loadData = async () => {
     try {
@@ -119,6 +152,98 @@ export default function AdminDashboard() {
     } catch (error: any) {
       toast.error(error.message || 'Ошибка удаления задачи');
     }
+  };
+
+  const loadAds = async () => {
+    try {
+      const data = await api.get<{ ads: Ad[] }>('/api/ads');
+      setAds(data.ads);
+    } catch (error: any) {
+      toast.error('Ошибка загрузки рекламы');
+      console.error(error);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const data = await api.post<{ imageUrl: string }>('/api/admin/ads/upload', formData);
+      setAdFormData(prev => ({ ...prev, imageUrl: data.imageUrl }));
+      toast.success('Изображение загружено');
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка загрузки изображения');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleCreateAd = async () => {
+    try {
+      if (!adFormData.imageUrl) {
+        toast.error('Необходимо загрузить изображение');
+        return;
+      }
+
+      await api.post('/api/ads', {
+        ...adFormData,
+        link: adFormData.link || null,
+      });
+
+      toast.success('Рекламный блок создан');
+      setIsAdFormOpen(false);
+      setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
+      loadAds();
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка создания рекламного блока');
+    }
+  };
+
+  const handleUpdateAd = async () => {
+    if (!editingAd) return;
+
+    try {
+      await api.patch(`/api/ads/${editingAd.id}`, {
+        ...adFormData,
+        link: adFormData.link || null,
+      });
+
+      toast.success('Рекламный блок обновлен');
+      setEditingAd(null);
+      setIsAdFormOpen(false);
+      setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
+      loadAds();
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка обновления рекламного блока');
+    }
+  };
+
+  const handleDeleteAd = async (id: string) => {
+    if (!confirm('Удалить рекламный блок?')) return;
+
+    try {
+      await api.delete(`/api/ads/${id}`);
+      toast.success('Рекламный блок удален');
+      loadAds();
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка удаления рекламного блока');
+    }
+  };
+
+  const handleEditAd = (ad: Ad) => {
+    setEditingAd(ad);
+    setAdFormData({
+      imageUrl: ad.imageUrl,
+      link: ad.link || '',
+      position: ad.position,
+      isActive: ad.isActive,
+    });
+    setIsAdFormOpen(true);
   };
 
   if (loading) {
@@ -189,6 +314,20 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Аналитика
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('ads')}
+            className={cn(
+              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'ads'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Реклама
             </div>
           </button>
         </div>
@@ -476,6 +615,184 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {activeTab === 'ads' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Управление рекламой</CardTitle>
+                  <CardDescription>
+                    Добавление и управление рекламными блоками на сайте
+                  </CardDescription>
+                </div>
+                <Button onClick={() => {
+                  setEditingAd(null);
+                  setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
+                  setIsAdFormOpen(true);
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить рекламу
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {ads.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  Нет рекламных блоков
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {ads.map((ad) => (
+                    <div key={ad.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-4">
+                        <img 
+                          src={ad.imageUrl} 
+                          alt="Реклама"
+                          className="w-32 h-32 object-cover rounded"
+                        />
+                        <div className="flex-1 space-y-2">
+                          <div>
+                            <span className="text-sm text-muted-foreground">Ссылка: </span>
+                            <span className="text-sm">{ad.link || 'Не указана'}</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-muted-foreground">Позиция: </span>
+                            <span className="text-sm">{ad.position}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Активна: </span>
+                            <Badge variant={ad.isActive ? 'default' : 'secondary'}>
+                              {ad.isActive ? 'Да' : 'Нет'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditAd(ad)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteAd(ad.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {isAdFormOpen && (
+          <Dialog open={isAdFormOpen} onOpenChange={setIsAdFormOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingAd ? 'Редактировать рекламу' : 'Добавить рекламу'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Изображение</label>
+                  {adFormData.imageUrl ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={adFormData.imageUrl} 
+                        alt="Превью"
+                        className="w-full h-64 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setAdFormData(prev => ({ ...prev, imageUrl: '' }))}
+                      >
+                        Удалить изображение
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                        className="hidden"
+                        id="ad-image-upload"
+                      />
+                      <label htmlFor="ad-image-upload" className="cursor-pointer">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={uploadingImage}
+                          className="w-full"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {uploadingImage ? 'Загрузка...' : 'Загрузить изображение'}
+                        </Button>
+                      </label>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Ссылка (необязательно)</label>
+                  <Input
+                    type="url"
+                    placeholder="https://example.com"
+                    value={adFormData.link}
+                    onChange={(e) => setAdFormData(prev => ({ ...prev, link: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Позиция</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={adFormData.position}
+                    onChange={(e) => setAdFormData(prev => ({ ...prev, position: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="ad-active"
+                    checked={adFormData.isActive}
+                    onChange={(e) => setAdFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                  />
+                  <label htmlFor="ad-active" className="text-sm font-medium">
+                    Активна
+                  </label>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsAdFormOpen(false);
+                      setEditingAd(null);
+                      setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
+                    }}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    onClick={editingAd ? handleUpdateAd : handleCreateAd}
+                    disabled={!adFormData.imageUrl}
+                  >
+                    {editingAd ? 'Сохранить' : 'Создать'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
     </div>
   );

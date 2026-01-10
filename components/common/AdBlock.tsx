@@ -1,27 +1,102 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/card';
+import { api } from '../../src/api/client';
 import styles from './AdBlock.module.css';
+
+interface Ad {
+  id: string;
+  imageUrl: string;
+  link: string | null;
+  position: number;
+  isActive: boolean;
+}
 
 interface AdBlockProps {
   className?: string;
-  title?: string;
+  count?: number; // Количество рекламных блоков
 }
 
 export default function AdBlock({ 
   className = '',
-  title = 'Реклама'
+  count = 1
 }: AdBlockProps) {
-  return (
-    <div className={`${styles.adBlock} ${className}`}>
-      <Card className={styles.adCard}>
-        <CardContent className={styles.adContent}>
-          <div className={styles.adPlaceholder}>
-            <p className={styles.adTitle}>{title}</p>
-            <p className={styles.adText}>
-              300x600
-            </p>
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAds();
+  }, []);
+
+  const loadAds = async () => {
+    try {
+      const data = await api.get<{ ads: Ad[] }>('/api/ads');
+      // Проверяем, что данные в правильном формате
+      if (data && Array.isArray(data.ads)) {
+        // Берем только необходимое количество
+        const adsToShow = data.ads.slice(0, count);
+        setAds(adsToShow);
+      } else {
+        console.warn('Неожиданный формат ответа от API рекламы:', data);
+        setAds([]);
+      }
+    } catch (error: any) {
+      console.error('Ошибка загрузки рекламы:', error);
+      // В режиме разработки показываем детали ошибки
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Детали ошибки:', error.message, error);
+      }
+      setAds([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdClick = (ad: Ad) => {
+    if (ad.link) {
+      window.open(ad.link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={`${styles.adContainer} ${className}`}>
+        {[...Array(count)].map((_, i) => (
+          <div key={i} className={styles.adBlock}>
+            <Card className={styles.adCard}>
+              <CardContent className={styles.adContent}>
+                <div className={styles.adPlaceholder}>
+                  <p className={styles.adText}>Загрузка...</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (ads.length === 0) {
+    return null; // Не показываем ничего, если нет рекламы
+  }
+
+  return (
+    <div className={`${styles.adContainer} ${className}`}>
+      {ads.map((ad) => (
+        <div key={ad.id} className={styles.adBlock}>
+          <Card 
+            className={styles.adCard}
+            onClick={() => handleAdClick(ad)}
+          >
+            <CardContent className={styles.adContent}>
+              <img 
+                src={ad.imageUrl} 
+                alt="Реклама"
+                className={styles.adImage}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      ))}
     </div>
   );
 }

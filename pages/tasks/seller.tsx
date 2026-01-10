@@ -188,7 +188,7 @@ export default function SellerTasksCatalog() {
         </div>
 
         <aside className={styles.sidebar}>
-          <AdBlock title="Реклама" />
+          <AdBlock count={2} />
         </aside>
       </div>
     </div>

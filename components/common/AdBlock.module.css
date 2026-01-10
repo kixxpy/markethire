@@ -1,21 +1,43 @@
-.adBlock {
+.adContainer {
   width: 100%;
   max-width: 300px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.adBlock {
+  width: 100%;
 }
 
 .adCard {
   position: sticky;
   top: 20px;
   height: fit-content;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .adContent {
   padding: 0;
-  min-height: 600px;
+  width: 300px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.adImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .adPlaceholder {
@@ -28,21 +50,17 @@
   background: hsl(var(--muted));
   border-radius: 8px;
   color: hsl(var(--muted-foreground));
-}
-
-.adTitle {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  padding: 16px;
+  text-align: center;
 }
 
 .adText {
-  font-size: 12px;
-  opacity: 0.7;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 @media (max-width: 1024px) {
-  .adBlock {
+  .adContainer {
     max-width: 100%;
   }
 
@@ -51,12 +69,24 @@
   }
 
   .adContent {
-    min-height: 200px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 768px) {
   .adContent {
-    min-height: 150px;
+    height: 250px;
+  }
+
+  .adContainer {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .adContent {
+    height: 200px;
   }
 }
