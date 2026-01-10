@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
@@ -87,6 +87,7 @@ export default function AdminDashboard() {
     isActive: true,
   });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const adImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -168,19 +169,58 @@ export default function AdminDashboard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Проверка наличия токена
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      toast.error('Необходима авторизация. Пожалуйста, войдите в систему.');
+      router.push('/login');
+      return;
+    }
+
     setUploadingImage(true);
     try {
       const formData = new FormData();
       formData.append('image', file);
 
-      const data = await api.post<{ imageUrl: string }>('/api/admin/ads/upload', formData);
-      setAdFormData(prev => ({ ...prev, imageUrl: data.imageUrl }));
-      toast.success('Изображение загружено');
+      const response = await api.post<{ imageUrl: string }>('/api/admin/ads/upload', formData);
+      
+      // Убеждаемся, что response содержит imageUrl
+      if (response && response.imageUrl) {
+        setAdFormData(prev => ({ ...prev, imageUrl: response.imageUrl }));
+        toast.success('Изображение загружено');
+      } else {
+        throw new Error('Неожиданный формат ответа от сервера');
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка загрузки изображения');
+      console.error('Ошибка загрузки изображения:', error);
+      
+      // Извлекаем сообщение об ошибке
+      let errorMessage = error.message || 'Ошибка загрузки изображения';
+      
+      // Если есть детали ошибки, добавляем их в консоль
+      if (error.message && error.message.includes('Детали:')) {
+        console.error('Детали ошибки:', error.message);
+      }
+      
+      if (error.message?.includes('401') || error.message?.includes('авторизац')) {
+        toast.error('Ошибка авторизации. Пожалуйста, войдите в систему заново.');
+        router.push('/login');
+      } else {
+        // Показываем только основное сообщение об ошибке (без деталей для пользователя)
+        const userFriendlyMessage = errorMessage.split('\n\nДетали:')[0];
+        toast.error(userFriendlyMessage || 'Ошибка загрузки изображения');
+      }
     } finally {
       setUploadingImage(false);
+      // Сбрасываем значение input, чтобы можно было загрузить тот же файл снова
+      if (adImageInputRef.current) {
+        adImageInputRef.current.value = '';
+      }
     }
+  };
+
+  const handleImageButtonClick = () => {
+    adImageInputRef.current?.click();
   };
 
   const handleCreateAd = async () => {
@@ -190,9 +230,30 @@ export default function AdminDashboard() {
         return;
       }
 
+      if (!adFormData.link || adFormData.link.trim() === '') {
+        toast.error('Необходимо указать ссылку');
+        return;
+      }
+
+      // Валидация URL
+      try {
+        new URL(adFormData.link);
+      } catch {
+        toast.error('Некорректный формат URL');
+        return;
+      }
+
+      // Проверка наличия токена
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        toast.error('Необходима авторизация. Пожалуйста, войдите в систему.');
+        router.push('/login');
+        return;
+      }
+
       await api.post('/api/ads', {
         ...adFormData,
-        link: adFormData.link || null,
+        link: adFormData.link.trim(),
       });
 
       toast.success('Рекламный блок создан');
@@ -200,7 +261,13 @@ export default function AdminDashboard() {
       setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
       loadAds();
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка создания рекламного блока');
+      console.error('Ошибка создания рекламы:', error);
+      if (error.message?.includes('401') || error.message?.includes('авторизац')) {
+        toast.error('Ошибка авторизации. Пожалуйста, войдите в систему заново.');
+        router.push('/login');
+      } else {
+        toast.error(error.message || 'Ошибка создания рекламного блока');
+      }
     }
   };
 
@@ -208,9 +275,22 @@ export default function AdminDashboard() {
     if (!editingAd) return;
 
     try {
+      if (!adFormData.link || adFormData.link.trim() === '') {
+        toast.error('Необходимо указать ссылку');
+        return;
+      }
+
+      // Валидация URL
+      try {
+        new URL(adFormData.link);
+      } catch {
+        toast.error('Некорректный формат URL');
+        return;
+      }
+
       await api.patch(`/api/ads/${editingAd.id}`, {
         ...adFormData,
-        link: adFormData.link || null,
+        link: adFormData.link.trim(),
       });
 
       toast.success('Рекламный блок обновлен');
@@ -722,6 +802,7 @@ export default function AdminDashboard() {
                   ) : (
                     <div>
                       <input
+                        ref={adImageInputRef}
                         type="file"
                         accept="image/jpeg,image/jpg,image/png,image/webp"
                         onChange={handleImageUpload}
@@ -729,27 +810,29 @@ export default function AdminDashboard() {
                         className="hidden"
                         id="ad-image-upload"
                       />
-                      <label htmlFor="ad-image-upload" className="cursor-pointer">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={uploadingImage}
-                          className="w-full"
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {uploadingImage ? 'Загрузка...' : 'Загрузить изображение'}
-                        </Button>
-                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={uploadingImage}
+                        className="w-full"
+                        onClick={handleImageButtonClick}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploadingImage ? 'Загрузка...' : 'Загрузить изображение'}
+                      </Button>
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Ссылка (необязательно)</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Ссылка <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     type="url"
                     placeholder="https://example.com"
                     value={adFormData.link}
                     onChange={(e) => setAdFormData(prev => ({ ...prev, link: e.target.value }))}
+                    required
                   />
                 </div>
                 <div>
@@ -785,7 +868,7 @@ export default function AdminDashboard() {
                   </Button>
                   <Button
                     onClick={editingAd ? handleUpdateAd : handleCreateAd}
-                    disabled={!adFormData.imageUrl}
+                    disabled={!adFormData.imageUrl || !adFormData.link || adFormData.link.trim() === ''}
                   >
                     {editingAd ? 'Сохранить' : 'Создать'}
                   </Button>

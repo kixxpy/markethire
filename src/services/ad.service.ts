@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma';
 
 export interface CreateAdInput {
   imageUrl: string;
-  link?: string;
+  link: string; // Теперь обязательное поле
   position?: number;
   isActive?: boolean;
 }

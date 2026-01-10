@@ -51,7 +51,7 @@ export async function apiRequest<T>(
       }
     }
     
-    const errorMessage = error.error || error.message || `Ошибка ${response.status}: ${response.statusText}`;
+    let errorMessage = error.error || error.message || `Ошибка ${response.status}: ${response.statusText}`;
     
     // Обработка 401 ошибки (недействительный токен)
     if (response.status === 401 && typeof window !== 'undefined') {
@@ -70,8 +70,16 @@ export async function apiRequest<T>(
       const errorDetails = typeof error.details === 'object' 
         ? JSON.stringify(error.details, null, 2)
         : error.details;
-      throw new Error(`${errorMessage}\n\nДетали:\n${errorDetails}`);
+      errorMessage = `${errorMessage}\n\nДетали:\n${errorDetails}`;
     }
+    
+    // Логируем полную информацию об ошибке для отладки
+    console.error('API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: error,
+      endpoint: endpoint
+    });
     
     throw new Error(errorMessage);
   }

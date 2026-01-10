@@ -5,18 +5,23 @@ import { AuthenticatedRequest } from '../../../src/middleware';
 import { z } from 'zod';
 
 const createAdSchema = z.object({
-  imageUrl: z.string().url('Некорректный URL изображения'),
-  link: z.union([
-    z.string().url('Некорректный URL ссылки'),
-    z.literal(''),
-    z.null(),
-  ]).optional().nullable(),
+  imageUrl: z.string().min(1, 'URL изображения обязателен').refine(
+    (url) => {
+      // Принимаем как полные URL, так и относительные пути
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        // Если не полный URL, проверяем, что это валидный относительный путь
+        return url.startsWith('/') && url.length > 1;
+      }
+    },
+    { message: 'Некорректный URL изображения' }
+  ),
+  link: z.string().url('Некорректный URL ссылки').min(1, 'Ссылка обязательна'),
   position: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
-}).transform((data) => ({
-  ...data,
-  link: data.link === '' ? null : data.link,
-}));
+});
 
 // Публичный endpoint для получения активных рекламных блоков
 async function publicHandler(req: NextApiRequest, res: NextApiResponse) {

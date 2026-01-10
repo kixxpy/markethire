@@ -6,17 +6,10 @@ import { z } from 'zod';
 
 const updateAdSchema = z.object({
   imageUrl: z.string().url('Некорректный URL изображения').optional(),
-  link: z.union([
-    z.string().url('Некорректный URL ссылки'),
-    z.literal(''),
-    z.null(),
-  ]).optional().nullable(),
+  link: z.string().url('Некорректный URL ссылки').min(1, 'Ссылка обязательна'),
   position: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
-}).transform((data) => ({
-  ...data,
-  link: data.link === '' ? null : data.link,
-}));
+});
 
 async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
