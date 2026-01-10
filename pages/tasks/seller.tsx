@@ -14,6 +14,7 @@ import styles from './seller.module.css';
 
 interface TaskWithRelations extends Task {
   category: Category;
+  images?: string[]; // Массив URL изображений
   user: {
     username?: string | null;
     name: string | null;
@@ -75,7 +76,7 @@ export default function SellerTasksCatalog() {
       queryParams.append('sortBy', (router.query.sortBy as string) || 'createdAt');
       queryParams.append('sortOrder', (router.query.sortOrder as string) || 'desc');
       queryParams.append('page', currentPage.toString());
-      queryParams.append('limit', '20');
+      queryParams.append('limit', '15');
       queryParams.append('createdInMode', 'SELLER');
 
       const data = await api.get<{

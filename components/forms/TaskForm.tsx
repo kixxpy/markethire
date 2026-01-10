@@ -93,6 +93,18 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
     form.setValue('tagIds', newTags);
   };
 
+  // Конвертация data URI в Blob без использования fetch (для соответствия CSP)
+  const dataURItoBlob = (dataURI: string): Blob => {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  };
+
   const onSubmit = async (data: TaskFormData) => {
     try {
       if (taskId) {
@@ -106,8 +118,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
           
           for (let i = 0; i < newImages.length; i++) {
             const imageUrl = newImages[i];
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
+            const blob = dataURItoBlob(imageUrl);
             const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
             formData.append('images', file);
           }
@@ -160,8 +171,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             const imageUrl = images[i];
             if (imageUrl.startsWith('data:')) {
               // Это локальное превью, нужно загрузить
-              const response = await fetch(imageUrl);
-              const blob = await response.blob();
+              const blob = dataURItoBlob(imageUrl);
               const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
               formData.append('images', file);
             }

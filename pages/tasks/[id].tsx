@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../../src/api/client';
 import { Task, Category, Marketplace, TaskStatus, TaskModerationStatus } from '@prisma/client';
 import ResponseForm from '../../components/forms/ResponseForm';
@@ -28,6 +30,7 @@ interface TaskWithRelations extends Task {
   category: Category;
   moderationStatus?: TaskModerationStatus;
   moderationComment?: string | null;
+  images?: string[];
   user: {
     id: string;
     username: string | null;
@@ -73,6 +76,7 @@ export default function TaskDetailPage() {
   const [responses, setResponses] = useState<TaskWithRelations['responses']>([]);
   const [loading, setLoading] = useState(true);
   const [showResponseForm, setShowResponseForm] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -130,6 +134,24 @@ export default function TaskDetailPage() {
   const isOwner = task && user && task.userId === user.id;
   const isAdmin = user?.role === 'ADMIN';
   const canRespond = isAuthenticated && task && !isOwner && task.status === 'OPEN';
+
+  const images = task?.images || [];
+  const hasImages = images.length > 0;
+
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  // Сброс индекса изображения при изменении задачи
+  useEffect(() => {
+    if (task) {
+      setCurrentImageIndex(0);
+    }
+  }, [task?.id]);
 
   if (loading) {
     return (
@@ -212,6 +234,86 @@ export default function TaskDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Галерея изображений */}
+          {hasImages && (
+            <>
+              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
+                <Image
+                  src={images[currentImageIndex]}
+                  alt={`${task.title} - изображение ${currentImageIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 80vw"
+                />
+                
+                {/* Стрелки навигации */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePreviousImage}
+                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-all z-10"
+                      aria-label="Предыдущее изображение"
+                    >
+                      <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-all z-10"
+                      aria-label="Следующее изображение"
+                    >
+                      <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+                    </button>
+                  </>
+                )}
+                
+                {/* Индикаторы (точки) */}
+                {images.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentImageIndex
+                            ? 'bg-primary w-6'
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                        aria-label={`Изображение ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Миниатюры */}
+              {images.length > 1 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex
+                          ? 'border-primary'
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Миниатюра ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <Separator />
+            </>
+          )}
+
           <div>
             <h2 className="text-lg font-semibold mb-2">Описание</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{task.description}</p>

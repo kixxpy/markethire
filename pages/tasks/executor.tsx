@@ -75,7 +75,7 @@ export default function ExecutorServicesCatalog() {
       queryParams.append('sortBy', (router.query.sortBy as string) || 'createdAt');
       queryParams.append('sortOrder', (router.query.sortOrder as string) || 'desc');
       queryParams.append('page', currentPage.toString());
-      queryParams.append('limit', '20');
+      queryParams.append('limit', '15');
       queryParams.append('createdInMode', 'PERFORMER');
 
       const data = await api.get<{

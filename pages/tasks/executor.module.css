@@ -41,28 +41,33 @@
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  flex-direction: row;
 }
 
 .mainContent {
   flex: 1;
   min-width: 0;
+  order: 1;
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 32px;
 }
 
 .pagination {
   margin-top: 32px;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar {
   display: none;
   width: 300px;
   flex-shrink: 0;
+  order: 2;
 }
 
 /* Large Desktop (1440px+) */
@@ -74,11 +79,6 @@
   .sidebar {
     display: block;
   }
-
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 28px;
-  }
 }
 
 /* Desktop (1280px - 1439px) */
@@ -86,21 +86,11 @@
   .sidebar {
     display: block;
   }
-
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-  }
 }
 
 /* Medium Desktop (1024px - 1279px) */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .content {
-    gap: 20px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
   }
 
@@ -124,15 +114,14 @@
     gap: 20px;
   }
 
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
-  }
-
   .sidebar {
     width: 100%;
     display: block;
-    order: 3;
+    order: 2;
+  }
+
+  .mainContent {
+    order: 1;
   }
 }
 
@@ -160,8 +149,7 @@
   }
 
   .grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 24px;
   }
 
@@ -172,7 +160,11 @@
   .sidebar {
     width: 100%;
     display: block;
-    order: 3;
+    order: 2;
+  }
+
+  .mainContent {
+    order: 1;
   }
 }
 
