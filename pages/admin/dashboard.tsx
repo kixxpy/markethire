@@ -288,10 +288,24 @@ export default function AdminDashboard() {
         return;
       }
 
-      await api.patch(`/api/ads/${editingAd.id}`, {
-        ...adFormData,
+      // Подготавливаем данные для отправки
+      const updateData: {
+        link: string;
+        position: number;
+        isActive: boolean;
+        imageUrl?: string;
+      } = {
         link: adFormData.link.trim(),
-      });
+        position: adFormData.position,
+        isActive: adFormData.isActive,
+      };
+
+      // Включаем imageUrl только если он был изменен
+      if (adFormData.imageUrl && adFormData.imageUrl !== editingAd.imageUrl) {
+        updateData.imageUrl = adFormData.imageUrl;
+      }
+
+      await api.patch(`/api/ads/${editingAd.id}`, updateData);
 
       toast.success('Рекламный блок обновлен');
       setEditingAd(null);
@@ -299,7 +313,12 @@ export default function AdminDashboard() {
       setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
       loadAds();
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка обновления рекламного блока');
+      console.error('Ошибка обновления рекламы:', error);
+      if (error.message?.includes('Ошибка валидации')) {
+        toast.error('Ошибка валидации данных. Проверьте введенные данные.');
+      } else {
+        toast.error(error.message || 'Ошибка обновления рекламного блока');
+      }
     }
   };
 
