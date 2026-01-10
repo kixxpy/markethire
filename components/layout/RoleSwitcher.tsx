@@ -91,7 +91,7 @@ export function RoleSwitcher() {
   };
 
   const getModeLabel = (mode: 'SELLER' | 'PERFORMER') => {
-    return mode === 'SELLER' ? 'Seller mode' : 'Executor mode';
+    return mode === 'SELLER' ? 'Режим продавца' : 'Режим исполнителя';
   };
 
   const getModeIcon = (mode: 'SELLER' | 'PERFORMER') => {
@@ -116,7 +116,7 @@ export function RoleSwitcher() {
                 {getModeLabel(activeMode)}
               </span>
               <span className="sm:hidden">
-                {activeMode === 'SELLER' ? 'Seller' : 'Executor'}
+                {activeMode === 'SELLER' ? 'Продавец' : 'Исполнитель'}
               </span>
             </>
           ) : (
@@ -131,7 +131,7 @@ export function RoleSwitcher() {
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
-          Работать как:
+          Режим работы:
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup 
@@ -166,13 +166,13 @@ export function RoleSwitcher() {
                       "font-medium",
                       activeMode === 'SELLER' && "text-seller-primary"
                     )}>
-                      Seller
+                      Продавец
                     </span>
                     {activeMode === 'SELLER' && (
                       <Check className="h-3 w-3 text-seller-primary" />
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">Нанимаю экспертов</span>
+                  <span className="text-xs text-muted-foreground">Размещаю задачи для поиска исполнителя</span>
                 </div>
               </div>
             </DropdownMenuRadioItem>
@@ -206,13 +206,13 @@ export function RoleSwitcher() {
                       "font-medium",
                       activeMode === 'PERFORMER' && "text-executor-primary"
                     )}>
-                      Executor
+                      Исполнитель
                     </span>
                     {activeMode === 'PERFORMER' && (
                       <Check className="h-3 w-3 text-executor-primary" />
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">Ищу задачи</span>
+                  <span className="text-xs text-muted-foreground">Ищу задачи и размещаю свои услуги</span>
                 </div>
               </div>
             </DropdownMenuRadioItem>
