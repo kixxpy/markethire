@@ -12,7 +12,8 @@ import {
   LogOut, 
   Briefcase, 
   ShoppingBag,
-  FileText
+  FileText,
+  LayoutDashboard
 } from 'lucide-react';
 import { cn, getDisplayName } from '../../src/lib/utils';
 import { RoleSwitcher } from './RoleSwitcher';
@@ -60,7 +61,7 @@ export function Navbar() {
     if (user?.role === 'ADMIN') {
       return [
         ...baseLinks,
-        { href: '/admin/dashboard', label: 'Панель администратора' },
+        { href: '/admin/dashboard', label: 'Панель администратора', icon: <LayoutDashboard className="h-4 w-4" /> },
       ];
     }
 
@@ -71,6 +72,7 @@ export function Navbar() {
   const navLinks = getNavLinks();
 
   // Ссылки для шапки профиля (Задачи продавцов и Услуги исполнителей)
+  // Теперь доступны и для администратора
   const profileHeaderLinks = [
     { 
       href: '/tasks/seller', 
@@ -145,7 +147,8 @@ export function Navbar() {
               <ThemeToggle />
               <NotificationCenter />
               
-              <RoleSwitcher />
+              {/* Скрываем RoleSwitcher для администратора */}
+              {user?.role !== 'ADMIN' && <RoleSwitcher />}
               <Link
                 href="/profile"
                 className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
@@ -192,7 +195,7 @@ export function Navbar() {
                   variant="minimal" 
                   onClick={() => setIsSheetOpen(false)}
                 />
-                {isAuthenticated && (
+                {isAuthenticated && user?.role !== 'ADMIN' && (
                   <div className="pb-2 border-b">
                     <RoleSwitcher />
                   </div>
