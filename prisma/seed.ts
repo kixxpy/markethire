@@ -33,10 +33,13 @@ async function main() {
 
   // Очистка существующих данных (опционально, для перезапуска)
   console.log("🧹 Очистка существующих данных...");
-  await prisma.userTag.deleteMany();
-  await prisma.taskTag.deleteMany();
-  await prisma.tag.deleteMany();
-  await prisma.category.deleteMany();
+  // Удаляем в правильном порядке с учетом внешних ключей
+  await prisma.response.deleteMany(); // Ссылается на Task
+  await prisma.taskTag.deleteMany(); // Ссылается на Task и Tag
+  await prisma.task.deleteMany(); // Ссылается на Category
+  await prisma.userTag.deleteMany(); // Ссылается на User и Tag
+  await prisma.tag.deleteMany(); // Ссылается на Category
+  await prisma.category.deleteMany(); // Базовые данные
 
   // Создание категорий
   console.log("📁 Создание категорий...");

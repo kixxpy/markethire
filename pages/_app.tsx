@@ -17,12 +17,28 @@ const inter = Inter({
 
 export default function App({ Component, pageProps }: AppProps) {
   const init = useAuthStore((state) => state.init);
+  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const activeMode = useAuthStore((state) => state.activeMode);
 
   useEffect(() => {
     init();
   }, [init]);
+
+  // Обработка автоматического logout при недействительном токене
+  useEffect(() => {
+    const handleLogout = () => {
+      logout();
+      if (router.pathname !== '/login' && router.pathname !== '/register') {
+        router.push('/login');
+      }
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
+  }, [logout, router]);
 
   useEffect(() => {
     document.documentElement.classList.add(inter.variable);

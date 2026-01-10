@@ -53,6 +53,17 @@ export async function apiRequest<T>(
     
     const errorMessage = error.error || error.message || `Ошибка ${response.status}: ${response.statusText}`;
     
+    // Обработка 401 ошибки (недействительный токен)
+    if (response.status === 401 && typeof window !== 'undefined') {
+      // Очищаем токен из localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('activeMode');
+      
+      // Вызываем событие для logout (чтобы избежать циклических зависимостей)
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+    }
+    
     // В режиме разработки показываем детали ошибки
     if (process.env.NODE_ENV === 'development' && error.details) {
       console.error('Детали ошибки API:', error.details);

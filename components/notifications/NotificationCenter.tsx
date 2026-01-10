@@ -69,7 +69,12 @@ export function NotificationCenter() {
       );
       setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
-    } catch (error) {
+    } catch (error: any) {
+      // Игнорируем ошибки 401 (недействительный токен) - они обрабатываются в API клиенте
+      if (error?.message?.includes('Недействительный токен') || error?.message?.includes('Токен не предоставлен')) {
+        // Токен будет очищен автоматически, просто не показываем ошибку
+        return;
+      }
       console.error('Ошибка загрузки уведомлений:', error);
     } finally {
       setLoading(false);
