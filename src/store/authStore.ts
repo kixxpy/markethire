@@ -16,15 +16,17 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   activeMode: ActiveMode | null;
   hasSeenSellerOnboarding: boolean;
   hasSeenExecutorOnboarding: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (user: User) => void;
   setActiveMode: (mode: ActiveMode) => void;
   setOnboardingSeen: (mode: ActiveMode) => void;
+  setTokens: (token: string, refreshToken: string) => void;
   init: () => void;
   canSwitchToSeller: () => boolean;
   canSwitchToPerformer: () => boolean;
@@ -35,12 +37,13 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       activeMode: null,
       hasSeenSellerOnboarding: false,
       hasSeenExecutorOnboarding: false,
 
-      login: (user, token) => {
+      login: (user, token, refreshToken) => {
         let initialMode: ActiveMode | null = null;
         if (user.role === 'BOTH') {
           const savedMode = typeof window !== 'undefined' 
@@ -56,16 +59,20 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
+          if (refreshToken) {
+            localStorage.setItem('refreshToken', refreshToken);
+          }
           if (initialMode) {
             localStorage.setItem('activeMode', initialMode);
           }
         }
-        set({ user, token, isAuthenticated: true, activeMode: initialMode });
+        set({ user, token, refreshToken: refreshToken || null, isAuthenticated: true, activeMode: initialMode });
       },
 
       logout: () => {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
           localStorage.removeItem('activeMode');
           localStorage.removeItem('hasSeenSellerOnboarding');
@@ -74,6 +81,7 @@ export const useAuthStore = create<AuthState>()(
         set({ 
           user: null, 
           token: null, 
+          refreshToken: null,
           isAuthenticated: false, 
           activeMode: null,
           hasSeenSellerOnboarding: false,
@@ -113,6 +121,14 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      setTokens: (token, refreshToken) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+        set({ token, refreshToken });
+      },
+
       canSwitchToSeller: () => {
         const { user } = get();
         return user ? (user.role === 'SELLER' || user.role === 'BOTH') : false;
@@ -126,6 +142,7 @@ export const useAuthStore = create<AuthState>()(
       init: () => {
         if (typeof window !== 'undefined') {
           const token = localStorage.getItem('token');
+          const refreshToken = localStorage.getItem('refreshToken');
           const userStr = localStorage.getItem('user');
           const savedMode = localStorage.getItem('activeMode') as ActiveMode | null;
           const hasSeenSeller = localStorage.getItem('hasSeenSellerOnboarding') === 'true';
@@ -147,6 +164,7 @@ export const useAuthStore = create<AuthState>()(
               set({ 
                 user, 
                 token, 
+                refreshToken: refreshToken || null,
                 isAuthenticated: true, 
                 activeMode,
                 hasSeenSellerOnboarding: hasSeenSeller,
@@ -154,6 +172,7 @@ export const useAuthStore = create<AuthState>()(
               });
             } catch (e) {
               localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
               localStorage.removeItem('user');
               localStorage.removeItem('activeMode');
               localStorage.removeItem('hasSeenSellerOnboarding');

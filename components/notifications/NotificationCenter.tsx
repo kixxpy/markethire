@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from '../ui/sheet';
 import { Button } from '../ui/button';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, X } from 'lucide-react';
 import { UserRole } from '@prisma/client';
 import { cn } from '../../src/lib/utils';
 import { toast } from 'sonner';
@@ -44,15 +44,53 @@ export function NotificationCenter() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [checkingTask, setCheckingTask] = useState<string | null>(null);
+  const [deletingNotification, setDeletingNotification] = useState<string | null>(null);
+  const autoDeleteTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Константа для автоматического удаления (7 дней в миллисекундах)
+  const AUTO_DELETE_AFTER_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
 
   useEffect(() => {
     if (user) {
       loadNotifications();
       // Обновляем каждые 30 секунд
       const interval = setInterval(loadNotifications, 30000);
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(interval);
+        // Очищаем все таймеры при размонтировании
+        autoDeleteTimersRef.current.forEach(timer => clearTimeout(timer));
+        autoDeleteTimersRef.current.clear();
+      };
     }
   }, [user, activeMode]);
+
+  // Функция для установки таймера автоматического удаления
+  const setupAutoDelete = (notification: Notification) => {
+    // Очищаем предыдущий таймер, если он существует
+    const existingTimer = autoDeleteTimersRef.current.get(notification.id);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const createdAt = new Date(notification.createdAt).getTime();
+    const now = Date.now();
+    const age = now - createdAt;
+    const timeUntilDelete = AUTO_DELETE_AFTER_MS - age;
+
+    // Если уведомление уже старше 7 дней, удаляем сразу
+    if (timeUntilDelete <= 0) {
+      handleDeleteNotification(notification.id, false);
+      return;
+    }
+
+    // Устанавливаем таймер на оставшееся время
+    const timer = setTimeout(() => {
+      handleDeleteNotification(notification.id, false);
+      autoDeleteTimersRef.current.delete(notification.id);
+    }, timeUntilDelete);
+
+    autoDeleteTimersRef.current.set(notification.id, timer);
+  };
 
   const loadNotifications = async () => {
     if (!user) return;
@@ -67,8 +105,14 @@ export function NotificationCenter() {
       const data = await api.get<NotificationResponse>(
         `/api/notifications?${queryParams.toString()}`
       );
+      
       setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
+
+      // Устанавливаем таймеры для автоматического удаления
+      data.notifications.forEach(notification => {
+        setupAutoDelete(notification);
+      });
     } catch (error: any) {
       // Игнорируем ошибки 401 (недействительный токен) - они обрабатываются в API клиенте
       if (error?.message?.includes('Недействительный токен') || error?.message?.includes('Токен не предоставлен')) {
@@ -100,6 +144,41 @@ export function NotificationCenter() {
       setUnreadCount(0);
     } catch (error) {
       console.error('Ошибка обновления уведомлений:', error);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId: string, showToast: boolean = true) => {
+    // Очищаем таймер, если он существует
+    const timer = autoDeleteTimersRef.current.get(notificationId);
+    if (timer) {
+      clearTimeout(timer);
+      autoDeleteTimersRef.current.delete(notificationId);
+    }
+
+    setDeletingNotification(notificationId);
+    
+    try {
+      await api.delete(`/api/notifications/${notificationId}`);
+      
+      const notification = notifications.find(n => n.id === notificationId);
+      const wasUnread = notification && !notification.read;
+      
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      if (showToast) {
+        toast.success('Уведомление удалено');
+      }
+    } catch (error: any) {
+      console.error('Ошибка удаления уведомления:', error);
+      if (showToast) {
+        toast.error('Не удалось удалить уведомление');
+      }
+    } finally {
+      setDeletingNotification(null);
     }
   };
 
@@ -210,7 +289,7 @@ export function NotificationCenter() {
               <div
                 key={notification.id}
                 className={cn(
-                  "p-4 rounded-lg border cursor-pointer transition-colors",
+                  "p-4 rounded-lg border cursor-pointer transition-colors relative group",
                   checkingTask === notification.id && "opacity-50 cursor-wait",
                   notification.read
                     ? "bg-muted/50 hover:bg-muted"
@@ -218,9 +297,26 @@ export function NotificationCenter() {
                   notification.role === 'PERFORMER' && !notification.read &&
                     "bg-executor-accent/30 border-executor-border hover:bg-executor-accent/50"
                 )}
-                onClick={() => !checkingTask && handleNotificationClick(notification)}
+                onClick={() => !checkingTask && !deletingNotification && handleNotificationClick(notification)}
               >
-                <div className="flex items-start justify-between gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteNotification(notification.id);
+                  }}
+                  disabled={deletingNotification === notification.id}
+                  className={cn(
+                    "absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+                    "hover:bg-destructive/10 text-muted-foreground hover:text-destructive",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    deletingNotification === notification.id && "opacity-100"
+                  )}
+                  aria-label="Удалить уведомление"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                
+                <div className="flex items-start justify-between gap-2 pr-6">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <NotificationBadge role={notification.role} />

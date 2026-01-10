@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { api } from '../../src/api/client';
 import styles from './AdBlock.module.css';
@@ -23,16 +23,12 @@ export default function AdBlock({
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAds();
-  }, []);
-
-  const loadAds = async () => {
+  const loadAds = useCallback(async () => {
     try {
       const data = await api.get<{ ads: Ad[] }>('/api/ads');
       // Проверяем, что данные в правильном формате
       if (data && Array.isArray(data.ads)) {
-        // Берем только необходимое количество
+        // Берем только необходимое количество активных реклам
         const adsToShow = data.ads.slice(0, count);
         setAds(adsToShow);
       } else {
@@ -49,7 +45,19 @@ export default function AdBlock({
     } finally {
       setLoading(false);
     }
-  };
+  }, [count]);
+
+  useEffect(() => {
+    loadAds();
+    
+    // Периодически обновляем рекламу (каждые 30 секунд)
+    // Это гарантирует, что изменения в админ-панели отобразятся на страницах
+    const interval = setInterval(() => {
+      loadAds();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [loadAds]);
 
   const handleAdClick = (ad: Ad) => {
     if (ad.link) {
@@ -60,6 +68,7 @@ export default function AdBlock({
   if (loading) {
     return (
       <div className={`${styles.adContainer} ${className}`}>
+        <h3 className={styles.title}>Партнеры</h3>
         {[...Array(count)].map((_, i) => (
           <div key={i} className={styles.adBlock}>
             <Card className={styles.adCard}>
@@ -75,12 +84,14 @@ export default function AdBlock({
     );
   }
 
+  // Если нет активных реклам (isActive = false), не показываем рекламный блок
   if (ads.length === 0) {
-    return null; // Не показываем ничего, если нет рекламы
+    return null;
   }
 
   return (
     <div className={`${styles.adContainer} ${className}`}>
+      <h3 className={styles.title}>Партнеры</h3>
       {ads.map((ad) => (
         <div key={ad.id} className={styles.adBlock}>
           <Card 

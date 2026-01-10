@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Category, Tag, Marketplace, TaskStatus } from '@prisma/client';
 import { api } from '../../src/api/client';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Filter, X } from 'lucide-react';
 import styles from './TaskFiltersSidebar.module.css';
 
@@ -29,7 +28,7 @@ export default function TaskFiltersSidebar({ filters, onFiltersChange }: TaskFil
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(filters.categoryId || 'all');
   const [selectedTags, setSelectedTags] = useState<string[]>(filters.tagIds || []);
-  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -230,41 +229,30 @@ export default function TaskFiltersSidebar({ filters, onFiltersChange }: TaskFil
   );
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside className={styles.sidebar}>
-        <Card className={styles.sidebarCard}>
-          <CardContent className={styles.sidebarContent}>
-            {filtersContent}
-          </CardContent>
-        </Card>
-      </aside>
-
-      {/* Mobile sheet */}
-      <div className={styles.mobileTrigger}>
-        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className={styles.mobileButton}>
-              <Filter className={styles.filterIcon} />
-              Фильтры
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className={styles.mobileSheet}>
-            <div className={styles.mobileHeader}>
-              <h2 className={styles.mobileTitle}>Фильтры</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMobileSheetOpen(false)}
-                className={styles.closeButton}
-              >
-                <X className={styles.closeIcon} />
-              </Button>
-            </div>
-            {filtersContent}
-          </SheetContent>
-        </Sheet>
-      </div>
-    </>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <Button
+        variant="outline"
+        onClick={() => setIsOpen(true)}
+        className={styles.triggerButton}
+      >
+        <Filter className={styles.filterIcon} />
+        Фильтры
+      </Button>
+      <SheetContent side="left" className={styles.sheetContent}>
+        <SheetHeader className={styles.sheetHeader}>
+          <SheetTitle className={styles.sheetTitle}>Фильтры</SheetTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            className={styles.closeButton}
+            aria-label="Закрыть"
+          >
+            <X className={styles.closeIcon} />
+          </Button>
+        </SheetHeader>
+        {filtersContent}
+      </SheetContent>
+    </Sheet>
   );
 }

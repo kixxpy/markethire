@@ -138,16 +138,17 @@ export default function SellerTasksCatalog() {
       </div>
 
       <div className={styles.searchSection}>
-        <SearchBar
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Поиск по названию или описанию задачи..."
-        />
+        <div className={styles.searchWrapper}>
+          <SearchBar
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Поиск по названию или описанию задачи..."
+          />
+          <TaskFiltersSidebar filters={filters} onFiltersChange={handleFiltersChange} />
+        </div>
       </div>
 
       <div className={styles.content}>
-        <TaskFiltersSidebar filters={filters} onFiltersChange={handleFiltersChange} />
-
         <div className={styles.mainContent}>
           {loading ? (
             <div className={styles.grid}>
@@ -188,7 +189,7 @@ export default function SellerTasksCatalog() {
         </div>
 
         <aside className={styles.sidebar}>
-          <AdBlock count={2} />
+          <AdBlock count={10} />
         </aside>
       </div>
     </div>

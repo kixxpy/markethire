@@ -19,6 +19,24 @@
   margin-bottom: 24px;
 }
 
+.searchWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchWrapper > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .searchWrapper {
+    gap: 8px;
+  }
+}
+
 .content {
   display: flex;
   gap: 24px;
@@ -47,29 +65,93 @@
   flex-shrink: 0;
 }
 
-/* Desktop */
-@media (min-width: 1280px) {
+/* Large Desktop (1440px+) */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1600px;
+  }
+
   .sidebar {
     display: block;
   }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
+  }
 }
 
-/* Tablet */
-@media (min-width: 768px) and (max-width: 1279px) {
+/* Desktop (1280px - 1439px) */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .sidebar {
+    display: block;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+}
+
+/* Medium Desktop (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .content {
+    gap: 20px;
+  }
+
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
   }
+
+  .sidebar {
+    display: none;
+  }
 }
 
-/* Mobile */
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .sidebar {
+    width: 100%;
+    display: block;
+    order: 3;
+  }
+}
+
+/* Mobile (480px - 767px) */
 @media (max-width: 767px) {
   .container {
     padding: 0 12px;
   }
 
+  .header {
+    margin-bottom: 20px;
+  }
+
   .title {
     font-size: 24px;
+  }
+
+  .searchSection {
+    margin-bottom: 20px;
   }
 
   .content {
@@ -80,11 +162,36 @@
   .grid {
     grid-template-columns: 1fr;
     gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .pagination {
+    margin-top: 24px;
   }
 
   .sidebar {
     width: 100%;
     display: block;
     order: 3;
+  }
+}
+
+/* Small Mobile (до 480px) */
+@media (max-width: 479px) {
+  .container {
+    padding: 0 8px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .grid {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .pagination {
+    margin-top: 20px;
   }
 }

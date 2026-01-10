@@ -142,3 +142,47 @@ export async function markAllNotificationsAsRead(
 
   return { count: result.count };
 }
+
+/**
+ * Удаление уведомления
+ */
+export async function deleteNotification(
+  notificationId: string,
+  userId: string
+): Promise<void> {
+  // Проверяем, что уведомление принадлежит пользователю
+  const notification = await prisma.notification.findFirst({
+    where: {
+      id: notificationId,
+      userId,
+    },
+  });
+
+  if (!notification) {
+    throw new Error("Уведомление не найдено");
+  }
+
+  await prisma.notification.delete({
+    where: { id: notificationId },
+  });
+}
+
+/**
+ * Удаление старых уведомлений (старше указанного количества дней)
+ */
+export async function deleteOldNotifications(
+  daysOld: number = 7
+): Promise<{ count: number }> {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  const result = await prisma.notification.deleteMany({
+    where: {
+      createdAt: {
+        lt: cutoffDate,
+      },
+    },
+  });
+
+  return { count: result.count };
+}

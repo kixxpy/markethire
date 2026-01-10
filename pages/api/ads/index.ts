@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getActiveAds, getAllAds, createAd } from '../../../src/services/ad.service';
-import { withAuth, withAdmin } from '../../../src/middleware';
+import { withAuth, withAdmin, isAdmin } from '../../../src/middleware';
 import { AuthenticatedRequest } from '../../../src/middleware';
 import { z } from 'zod';
 
@@ -91,26 +91,44 @@ async function adminHandler(req: AuthenticatedRequest, res: NextApiResponse) {
   }
 }
 
+// Handler для GET запросов с проверкой прав админа
+async function getAdsHandler(req: AuthenticatedRequest, res: NextApiResponse) {
+  // Если пользователь авторизован и является админом - возвращаем все рекламы
+  if (req.user && isAdmin(req.user.role)) {
+    try {
+      const ads = await getAllAds();
+      return res.status(200).json({ ads });
+    } catch (error: any) {
+      console.error('Ошибка получения всех реклам:', error);
+      // В случае ошибки возвращаем активные рекламы
+      const ads = await getActiveAds();
+      return res.status(200).json({ ads });
+    }
+  }
+  
+  // Иначе возвращаем только активные рекламы
+  return await publicHandler(req, res);
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    // Проверяем, есть ли авторизация
+    // Для GET запросов используем withAuth с опциональной проверкой
+    // Это позволяет проверить, является ли пользователь админом, без ошибок для неавторизованных
+    if (req.method === 'GET') {
+      return await withAuth(getAdsHandler, { optional: true })(req as AuthenticatedRequest, res);
+    }
+    
+    // Для POST и других методов требуется авторизация администратора
     const authHeader = req.headers.authorization;
-    
-    // Для GET запросов без токена используем публичный handler
-    if (req.method === 'GET' && (!authHeader || !authHeader.startsWith('Bearer '))) {
-      return await publicHandler(req, res);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Необходима авторизация' });
     }
     
-    // Для всех остальных случаев (с токеном или не-GET запросы) используем админский handler
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return await withAdmin(adminHandler)(req, res);
-    }
-    
-    // Если это не GET и нет токена - ошибка авторизации
-    return res.status(401).json({ error: 'Необходима авторизация' });
+    // Используем админский handler для POST и других методов
+    return await withAdmin(adminHandler)(req as AuthenticatedRequest, res);
   } catch (error: any) {
     console.error('Ошибка в главном handler /api/ads:', error);
     

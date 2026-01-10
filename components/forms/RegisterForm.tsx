@@ -51,7 +51,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         refreshToken?: string;
       }>('/api/auth/register', cleanedData);
 
-      login(response.user, response.token);
+      login(response.user, response.token, response.refreshToken);
       toast.success('Регистрация успешна');
       onSuccess?.();
       router.push('/seller/dashboard');

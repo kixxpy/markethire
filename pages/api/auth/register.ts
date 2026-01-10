@@ -31,6 +31,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       message: "Пользователь успешно зарегистрирован",
       user: result.user,
       token: result.token,
+      refreshToken: result.refreshToken,
     });
   } catch (error: any) {
     if (error.name === "ZodError") {

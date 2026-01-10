@@ -41,7 +41,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         refreshToken?: string;
       }>('/api/auth/login', data);
 
-      login(response.user, response.token);
+      login(response.user, response.token, response.refreshToken);
       toast.success('Успешный вход');
       onSuccess?.();
       

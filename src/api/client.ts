@@ -1,5 +1,57 @@
 const API_URL = '';
 
+// Переменные для управления процессом обновления токена
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Обновление access токена с помощью refresh токена
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  // Если уже идет процесс обновления, ждем его завершения
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  const refreshToken = typeof window !== 'undefined' 
+    ? localStorage.getItem('refreshToken') 
+    : null;
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  isRefreshing = true;
+  refreshPromise = fetch(`${API_URL}/api/auth/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refreshToken }),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+      const data = await response.json();
+      // Сохраняем оба токена
+      if (typeof window !== 'undefined' && data.accessToken && data.refreshToken) {
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+      return data.accessToken;
+    })
+    .catch(() => {
+      return null;
+    })
+    .finally(() => {
+      isRefreshing = false;
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -55,13 +107,42 @@ export async function apiRequest<T>(
     
     // Обработка 401 ошибки (недействительный токен)
     if (response.status === 401 && typeof window !== 'undefined') {
-      // Очищаем токен из localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('activeMode');
+      // Пытаемся обновить токен
+      const newAccessToken = await refreshAccessToken();
       
-      // Вызываем событие для logout (чтобы избежать циклических зависимостей)
-      window.dispatchEvent(new CustomEvent('auth:logout'));
+      if (newAccessToken) {
+        // Токены уже сохранены в refreshAccessToken
+        
+        // Обновляем заголовок и повторяем запрос
+        const newHeaders: HeadersInit = {
+          ...headers,
+          'Authorization': `Bearer ${newAccessToken}`,
+        };
+        
+        const retryResponse = await fetch(`${API_URL}${endpoint}`, {
+          ...options,
+          headers: newHeaders,
+        });
+        
+        if (!retryResponse.ok) {
+          // Если повторный запрос тоже не удался, разлогиниваем
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          localStorage.removeItem('activeMode');
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+          throw new Error(errorMessage);
+        }
+        
+        return retryResponse.json();
+      } else {
+        // Если не удалось обновить токен, разлогиниваем
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('activeMode');
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+      }
     }
     
     // В режиме разработки показываем детали ошибки
