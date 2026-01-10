@@ -1,6 +1,43 @@
 import { prisma } from "../lib/prisma";
 import { CreateTaskInput, UpdateTaskInput, TaskFiltersInput } from "../lib/validation";
 import { Marketplace, TaskStatus, BudgetType, UserRole } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+
+/**
+ * Общие include для задач с отношениями
+ */
+const TASK_INCLUDE = {
+  user: {
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+    },
+  },
+  category: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  tags: {
+    include: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+  _count: {
+    select: {
+      responses: true,
+    },
+  },
+} as const satisfies Prisma.TaskInclude;
 
 export interface TaskWithRelations {
   id: string;
@@ -94,38 +131,7 @@ export async function createTask(
         create: data.tagIds.map(tagId => ({ tagId })),
       } : undefined,
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
-        },
-      },
-    },
+    include: TASK_INCLUDE,
   });
 
   const result = {
@@ -282,38 +288,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
 export async function getTaskById(taskId: string): Promise<TaskWithRelations | null> {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
-        },
-      },
-    },
+    include: TASK_INCLUDE,
   });
 
   if (!task) {
@@ -452,38 +427,7 @@ export async function updateTask(
   const task = await prisma.task.update({
     where: { id: taskId },
     data: updateData,
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
-        },
-      },
-    },
+    include: TASK_INCLUDE,
   });
 
   const result = {
@@ -594,39 +538,10 @@ export async function closeTask(taskId: string, userId: string) {
     where: { id: taskId },
     data: { status: "CLOSED" },
     include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
+      ...TASK_INCLUDE,
       responses: {
         select: {
           userId: true,
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
         },
       },
     },
@@ -742,38 +657,7 @@ export async function getMyTasks(
     orderBy: {
       [sortBy]: sortOrder,
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
-        },
-      },
-    },
+    include: TASK_INCLUDE,
   });
 
   return {
@@ -876,38 +760,7 @@ export async function moderateTask(
       moderatedAt: new Date(),
       moderatedBy: adminId,
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
-        },
-      },
-    },
+    include: TASK_INCLUDE,
   });
 
   // Создание уведомления для пользователя
@@ -974,6 +827,7 @@ export async function getPendingTasks(
       createdAt: "desc",
     },
     include: {
+      ...TASK_INCLUDE,
       user: {
         select: {
           id: true,
@@ -983,27 +837,6 @@ export async function getPendingTasks(
           telegram: true,
           whatsapp: true,
           emailContact: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      tags: {
-        include: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          responses: true,
         },
       },
     },

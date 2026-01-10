@@ -152,7 +152,7 @@ export function Navbar() {
               >
                 <User className="h-4 w-4 flex-shrink-0" />
                 <span className="max-w-[140px] lg:max-w-[180px] truncate">
-                  {getDisplayName((user as any)?.username, user?.email)}
+                  {getDisplayName(user?.username ?? null, user?.email)}
                 </span>
               </Link>
               <Button
@@ -252,7 +252,7 @@ export function Navbar() {
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="text-sm font-medium truncate">
-                        {getDisplayName((user as any)?.username, user?.email)}
+                        {getDisplayName(user?.username ?? null, user?.email)}
                       </span>
                     </div>
                   </Link>

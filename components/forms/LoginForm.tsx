@@ -36,8 +36,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     try {
       const response = await api.post<{
         message: string;
-        user: { id: string; email: string; name: string | null; role: string };
+        user: { id: string; email: string; name: string | null; role: 'SELLER' | 'PERFORMER' | 'BOTH' | 'ADMIN' };
         token: string;
+        refreshToken?: string;
       }>('/api/auth/login', data);
 
       login(response.user, response.token);

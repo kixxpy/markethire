@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { hashPassword, verifyPassword, generateToken } from "../lib/auth";
+import { hashPassword, verifyPassword, generateToken, generateTokenPair } from "../lib/auth";
 import { RegisterInput, LoginInput, UpdateProfileInput } from "../lib/validation";
 import { UserRole } from "@prisma/client";
 
@@ -11,6 +11,7 @@ export interface AuthResult {
     role: UserRole;
   };
   token: string;
+  refreshToken?: string;
 }
 
 /**
@@ -57,14 +58,18 @@ export async function registerUser(
     },
   });
 
-  // Генерация токена
-  const token = generateToken({
+  // Генерация токенов (access + refresh)
+  const tokenPair = generateTokenPair({
     userId: user.id,
     email: user.email,
     role: user.role,
   });
 
-  return { user, token };
+  return { 
+    user, 
+    token: tokenPair.accessToken,
+    refreshToken: tokenPair.refreshToken,
+  };
 }
 
 /**
@@ -87,8 +92,8 @@ export async function loginUser(data: LoginInput): Promise<AuthResult> {
     throw new Error("Неверный email или пароль");
   }
 
-  // Генерация токена
-  const token = generateToken({
+  // Генерация токенов (access + refresh)
+  const tokenPair = generateTokenPair({
     userId: user.id,
     email: user.email,
     role: user.role,
@@ -101,7 +106,8 @@ export async function loginUser(data: LoginInput): Promise<AuthResult> {
       name: user.name,
       role: user.role,
     },
-    token,
+    token: tokenPair.accessToken,
+    refreshToken: tokenPair.refreshToken,
   };
 }
 

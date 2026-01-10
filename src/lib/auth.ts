@@ -8,6 +8,11 @@ export interface JWTPayload {
   role: string;
 }
 
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
 /**
  * Хеширование пароля
  */
@@ -27,24 +32,71 @@ export async function verifyPassword(
 }
 
 /**
- * Генерация JWT токена
+ * Генерация access токена (короткоживущий)
  */
-export function generateToken(payload: JWTPayload): string {
+export function generateAccessToken(payload: JWTPayload): string {
   return jwt.sign(payload, config.jwtSecret, {
-    expiresIn: "7d",
+    expiresIn: "15m", // 15 минут
   });
 }
 
 /**
- * Верификация JWT токена
+ * Генерация refresh токена (долгоживущий)
  */
-export function verifyToken(token: string): JWTPayload | null {
+export function generateRefreshToken(payload: JWTPayload): string {
+  return jwt.sign(payload, config.jwtRefreshSecret, {
+    expiresIn: "7d", // 7 дней
+  });
+}
+
+/**
+ * Генерация пары токенов (access + refresh)
+ */
+export function generateTokenPair(payload: JWTPayload): TokenPair {
+  return {
+    accessToken: generateAccessToken(payload),
+    refreshToken: generateRefreshToken(payload),
+  };
+}
+
+/**
+ * Генерация JWT токена (обратная совместимость)
+ * @deprecated Используйте generateAccessToken или generateTokenPair
+ */
+export function generateToken(payload: JWTPayload): string {
+  return generateAccessToken(payload);
+}
+
+/**
+ * Верификация access токена
+ */
+export function verifyAccessToken(token: string): JWTPayload | null {
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as JWTPayload;
     return decoded;
   } catch (error) {
     return null;
   }
+}
+
+/**
+ * Верификация refresh токена
+ */
+export function verifyRefreshToken(token: string): JWTPayload | null {
+  try {
+    const decoded = jwt.verify(token, config.jwtRefreshSecret) as JWTPayload;
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Верификация JWT токена (обратная совместимость)
+ * @deprecated Используйте verifyAccessToken
+ */
+export function verifyToken(token: string): JWTPayload | null {
+  return verifyAccessToken(token);
 }
 
 /**
