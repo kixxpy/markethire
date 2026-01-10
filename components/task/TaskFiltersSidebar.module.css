@@ -1,0 +1,157 @@
+.sidebar {
+  display: none;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.sidebarCard {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.sidebarContent {
+  padding: 0;
+}
+
+.filtersContent {
+  padding: 20px;
+}
+
+.filtersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.filtersTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.resetButton {
+  font-size: 14px;
+}
+
+.filtersList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.tagButton:hover {
+  background: hsl(var(--secondary) / 0.8);
+}
+
+.tagButtonActive {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+.mobileTrigger {
+  display: block;
+}
+
+.mobileButton {
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+}
+
+.filterIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.mobileSheet {
+  width: 100%;
+  max-width: 400px;
+  padding: 0;
+}
+
+.mobileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.mobileTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.closeIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: block;
+  }
+
+  .mobileTrigger {
+    display: none;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar {
+    display: block;
+    width: 240px;
+  }
+
+  .mobileTrigger {
+    display: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobileTrigger {
+    display: block;
+  }
+}

@@ -170,6 +170,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
     status,
     budgetMin,
     budgetMax,
+    search,
     sortBy,
     sortOrder,
     page,
@@ -213,6 +214,32 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
     if (budgetMax !== undefined) {
       where.budget.lte = budgetMax;
     }
+  }
+
+  // Поиск по названию и описанию
+  if (search && search.trim()) {
+    const searchConditions = {
+      OR: [
+        {
+          title: {
+            contains: search.trim(),
+            mode: 'insensitive' as const,
+          },
+        },
+        {
+          description: {
+            contains: search.trim(),
+            mode: 'insensitive' as const,
+          },
+        },
+      ],
+    };
+
+    // Добавляем поиск через AND для правильного объединения с другими условиями
+    if (!where.AND) {
+      where.AND = [];
+    }
+    where.AND.push(searchConditions);
   }
 
   // Фильтрация по тегам

@@ -44,7 +44,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       login(response.user, response.token);
       toast.success('Успешный вход');
       onSuccess?.();
-      router.push('/');
+      
+      // Редирект администратора на панель
+      if (response.user.role === 'ADMIN') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Ошибка входа');
     }

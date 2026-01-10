@@ -1,12 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { AuthModal } from '../components/auth/AuthModal';
+import { useAuthStore } from '../src/store/authStore';
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  // Редирект администратора на панель
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'ADMIN') {
+      router.push('/admin/dashboard');
+    }
+  }, [isAuthenticated, user, router]);
+
+  // Если администратор, не показываем контент (будет редирект)
+  if (isAuthenticated && user?.role === 'ADMIN') {
+    return null;
+  }
 
   const openLoginModal = () => {
     setAuthModalMode('login');

@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import TaskCard from '../../components/task/TaskCard';
-import TaskFilters from '../../components/task/TaskFilters';
+import TaskFiltersSidebar from '../../components/task/TaskFiltersSidebar';
+import SearchBar from '../../components/common/SearchBar';
+import AdBlock from '../../components/common/AdBlock';
 import Pagination from '../../components/common/Pagination';
 import { api } from '../../src/api/client';
 import { Task, Category } from '@prisma/client';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Card, CardContent } from '../../components/ui/card';
+import { useDebounce } from '../../src/lib/utils';
+import styles from './executor.module.css';
 
 interface TaskWithRelations extends Task {
   category: Category;
@@ -27,11 +31,13 @@ export default function ExecutorServicesCatalog() {
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState((router.query.search as string) || '');
   const [filters, setFilters] = useState({
     sortBy: 'createdAt' as 'createdAt' | 'budget',
     sortOrder: 'desc' as 'asc' | 'desc',
   });
 
+  const debouncedSearch = useDebounce(searchQuery, 500);
   const currentPage = parseInt(router.query.page as string) || 1;
 
   useEffect(() => {
@@ -46,12 +52,13 @@ export default function ExecutorServicesCatalog() {
       sortOrder: (router.query.sortOrder as 'asc' | 'desc') || 'desc',
     };
     setFilters(queryFilters);
+    setSearchQuery((router.query.search as string) || '');
   }, [router.query]);
 
   useEffect(() => {
     loadTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query]);
+  }, [router.query, debouncedSearch]);
 
   const loadTasks = async () => {
     try {
@@ -64,6 +71,7 @@ export default function ExecutorServicesCatalog() {
       if (router.query.status) queryParams.append('status', router.query.status as string);
       if (router.query.budgetMin) queryParams.append('budgetMin', router.query.budgetMin as string);
       if (router.query.budgetMax) queryParams.append('budgetMax', router.query.budgetMax as string);
+      if (debouncedSearch) queryParams.append('search', debouncedSearch);
       queryParams.append('sortBy', (router.query.sortBy as string) || 'createdAt');
       queryParams.append('sortOrder', (router.query.sortOrder as string) || 'desc');
       queryParams.append('page', currentPage.toString());
@@ -95,7 +103,7 @@ export default function ExecutorServicesCatalog() {
     });
   };
 
-  const handleFiltersChange = (newFilters: any) => {
+  const handleFiltersChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
     const query: any = { page: '1' };
     if (newFilters.categoryId) query.categoryId = newFilters.categoryId;
@@ -106,53 +114,83 @@ export default function ExecutorServicesCatalog() {
     if (newFilters.budgetMax) query.budgetMax = newFilters.budgetMax.toString();
     if (newFilters.sortBy) query.sortBy = newFilters.sortBy;
     if (newFilters.sortOrder) query.sortOrder = newFilters.sortOrder;
+    if (searchQuery) query.search = searchQuery;
     router.push({
       pathname: '/tasks/executor',
       query,
     });
-  };
+  }, [router, searchQuery]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    const query: any = { ...router.query, page: '1', search: value || undefined };
+    if (!value) delete query.search;
+    router.push({
+      pathname: '/tasks/executor',
+      query,
+    });
+  }, [router]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Услуги исполнителей</h1>
-      <TaskFilters filters={filters} onFiltersChange={handleFiltersChange} />
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Услуги исполнителей</h1>
+      </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6 space-y-4">
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
+      <div className={styles.searchSection}>
+        <SearchBar
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder="Поиск по названию или описанию услуги..."
+        />
+      </div>
+
+      <div className={styles.content}>
+        <TaskFiltersSidebar filters={filters} onFiltersChange={handleFiltersChange} />
+
+        <div className={styles.mainContent}>
+          {loading ? (
+            <div className={styles.grid}>
+              {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6 space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : tasks.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <p className="text-muted-foreground">Услуги исполнителей не найдены</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : tasks.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">Услуги исполнителей не найдены</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <div className="mt-8">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
+          ) : (
+            <>
+              <div className={styles.grid}>
+                {tasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className={styles.pagination}>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+
+        <aside className={styles.sidebar}>
+          <AdBlock title="Реклама" />
+        </aside>
+      </div>
     </div>
   );
 }

@@ -108,6 +108,7 @@ export const taskFiltersSchema = z.object({
   budgetMax: z.string().optional().transform((val) => 
     val ? parseInt(val, 10) : undefined
   ),
+  search: z.string().optional(),
   sortBy: z.enum(["createdAt", "budget"]).optional().default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   page: z.string().optional().transform((val) => 

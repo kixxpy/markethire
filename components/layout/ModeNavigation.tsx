@@ -12,7 +12,7 @@ import {
 import { cn } from '../../src/lib/utils';
 
 export function ModeNavigation() {
-  const { isAuthenticated, activeMode } = useAuthStore();
+  const { isAuthenticated, activeMode, user } = useAuthStore();
   const router = useRouter();
   const currentPath = router.pathname;
 
@@ -22,6 +22,9 @@ export function ModeNavigation() {
     }
     return currentPath.startsWith(path);
   };
+
+  // Скрываем для администратора
+  if (!isAuthenticated || user?.role === 'ADMIN') return null;
 
   // Блок навигации для режима SELLER
   const getSellerNavLinks = () => {
@@ -69,8 +72,6 @@ export function ModeNavigation() {
       },
     ];
   };
-
-  if (!isAuthenticated) return null;
 
   const sellerNavLinks = activeMode === 'SELLER' ? getSellerNavLinks() : [];
   const performerNavLinks = activeMode === 'PERFORMER' ? getPerformerNavLinks() : [];

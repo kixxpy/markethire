@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Textarea } from '../../components/ui/textarea';
-import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2, BarChart3, FolderTree } from 'lucide-react';
+import { cn } from '../../src/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +50,8 @@ interface Stats {
   categories: { total: number };
 }
 
+type TabType = 'moderation' | 'users' | 'categories' | 'analytics';
+
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
@@ -56,6 +59,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [revisionComments, setRevisionComments] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<TabType>('moderation');
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -129,7 +133,67 @@ export default function AdminDashboard() {
     <div className="container mx-auto py-8">
         <h1 className="text-3xl font-bold mb-8">Панель администратора</h1>
 
-        {/* Статистика */}
+        {/* Табы */}
+        <div className="flex gap-2 mb-6 border-b overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('moderation')}
+            className={cn(
+              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'moderation'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Модерация
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={cn(
+              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'users'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Пользователи
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('categories')}
+            className={cn(
+              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'categories'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <FolderTree className="h-4 w-4" />
+              Категории
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={cn(
+              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'analytics'
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Аналитика
+            </div>
+          </button>
+        </div>
+
+        {/* Статистика - показываем на всех табах */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <Card>
@@ -174,8 +238,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Задачи на модерации */}
-        <Card>
+        {/* Контент табов */}
+        {activeTab === 'moderation' && (
+          <Card>
           <CardHeader>
             <CardTitle>Задачи на модерации</CardTitle>
             <CardDescription>
@@ -336,6 +401,82 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+        )}
+
+        {activeTab === 'users' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Управление пользователями</CardTitle>
+              <CardDescription>
+                Просмотр и управление пользователями платформы
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center py-8">
+                Функционал управления пользователями будет добавлен в ближайшее время
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'categories' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Управление категориями</CardTitle>
+              <CardDescription>
+                Создание и редактирование категорий задач
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center py-8">
+                Функционал управления категориями будет добавлен в ближайшее время
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'analytics' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Аналитика</CardTitle>
+              <CardDescription>
+                Статистика и аналитика по платформе
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Всего пользователей</div>
+                      <div className="text-2xl font-bold">{stats.users.total}</div>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Всего задач</div>
+                      <div className="text-2xl font-bold">{stats.tasks.total}</div>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Одобрено задач</div>
+                      <div className="text-2xl font-bold text-green-600">{stats.tasks.approved}</div>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Отклонено задач</div>
+                      <div className="text-2xl font-bold text-red-600">{stats.tasks.rejected}</div>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Всего откликов</div>
+                      <div className="text-2xl font-bold">{stats.responses.total}</div>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Категорий</div>
+                      <div className="text-2xl font-bold">{stats.categories.total}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }
