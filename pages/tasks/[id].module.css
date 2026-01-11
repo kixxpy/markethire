@@ -1,90 +1,272 @@
-.imageGallery {
+/* Контейнер слайдера */
+.sliderContainer {
   position: relative;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  max-height: 300px;
-  aspect-ratio: 4 / 3;
-  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Слайдер */
+.slider {
+  position: relative;
+  width: 100%;
+  height: 250px;
   overflow: hidden;
+  border-radius: 0.75rem;
   background: hsl(var(--muted));
   border: 1px solid hsl(var(--border));
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Адаптивные стили для разных разрешений */
+/* Слайд */
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+.slideActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Изображение в слайде */
+.slideImage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.slideImage:hover {
+  transform: scale(1.02);
+}
+
+.slideImage:hover .zoomOverlay {
+  opacity: 1;
+}
+
+/* Оверлей для иконки увеличения */
+.zoomOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.zoomIcon {
+  width: 2rem;
+  height: 2rem;
+  color: white;
+}
+
+/* Кнопки навигации слайдера */
+.sliderNavButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sliderNavButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.sliderNavIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Индикаторы слайдера */
+.sliderIndicators {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.sliderIndicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: none;
+  background: hsl(var(--muted-foreground) / 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.sliderIndicator:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+  transform: scale(1.2);
+}
+
+.sliderIndicatorActive {
+  width: 1.5rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: hsl(var(--primary));
+}
+
+/* Модальное окно (Lightbox) */
+.lightboxContent {
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  width: 90vw !important;
+  height: 90vh !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.lightboxContainer {
+  position: relative;
+  width: 100%;
+  height: 90vh;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Кнопки навигации в модальном окне */
+.lightboxNavButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.lightboxNavButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightboxNavIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Счетчик изображений в модальном окне */
+.lightboxCounter {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+/* Кнопка закрытия в модальном окне */
+.lightboxContent :global(button[class*="absolute right-4 top-4"]) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(4px);
+  color: white !important;
+  z-index: 20;
+  transition: all 0.2s ease;
+}
+
+.lightboxContent :global(button[class*="absolute right-4 top-4"]:hover) {
+  background: rgba(255, 255, 255, 0.3) !important;
+  opacity: 1 !important;
+}
+
+/* Адаптивные стили */
 @media (max-width: 480px) {
-  .imageGallery {
-    max-height: 200px;
-    aspect-ratio: 4 / 3;
+  .slider {
+    height: 200px;
     border-radius: 0.5rem;
+  }
+
+  .sliderNavButton {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .sliderNavIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .lightboxContainer {
+    height: 85vh;
+    min-height: 300px;
+  }
+
+  .lightboxNavButton {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .lightboxNavIcon {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-  .imageGallery {
-    max-height: 240px;
-    aspect-ratio: 4 / 3;
+  .slider {
+    height: 220px;
   }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .imageGallery {
-    max-height: 280px;
-    aspect-ratio: 4 / 3;
+@media (min-width: 769px) {
+  .slider {
+    height: 250px;
   }
-}
-
-@media (min-width: 1025px) {
-  .imageGallery {
-    max-height: 300px;
-    aspect-ratio: 4 / 3;
-  }
-}
-
-/* Миниатюры */
-.thumbnails {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 0.75rem;
-  max-width: 600px;
-  margin: 1rem auto 0;
-}
-
-@media (min-width: 640px) {
-  .thumbnails {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 1rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .thumbnails {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-}
-
-.thumbnail {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-  opacity: 0.7;
-  cursor: pointer;
-  background: hsl(var(--muted));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.thumbnail:hover {
-  opacity: 1;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.thumbnailActive {
-  border-color: hsl(var(--primary));
-  opacity: 1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }

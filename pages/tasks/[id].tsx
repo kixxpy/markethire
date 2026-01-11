@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { api } from '../../src/api/client';
 import { Task, Category, Marketplace, TaskStatus, TaskModerationStatus } from '@prisma/client';
 import ResponseForm from '../../components/forms/ResponseForm';
@@ -23,6 +23,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../../components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+} from '../../components/ui/dialog';
 import { toast } from 'sonner';
 import { getDisplayName } from '../../src/lib/utils';
 import styles from './[id].module.css';
@@ -81,6 +86,8 @@ export default function TaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showResponseForm, setShowResponseForm] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -150,12 +157,43 @@ export default function TaskDetailPage() {
     setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
+  const handleOpenLightbox = (index: number) => {
+    setLightboxImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const handleLightboxPrevious = useCallback(() => {
+    setLightboxImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
+  const handleLightboxNext = useCallback(() => {
+    setLightboxImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
+
   // Сброс индекса изображения при изменении задачи
   useEffect(() => {
     if (task) {
       setCurrentImageIndex(0);
     }
   }, [task?.id]);
+
+  // Обработка клавиатуры для навигации в модальном окне
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleLightboxPrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleLightboxNext();
+      } else if (e.key === 'Escape') {
+        setIsLightboxOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, handleLightboxPrevious, handleLightboxNext]);
 
   if (loading) {
     return (
@@ -240,49 +278,68 @@ export default function TaskDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Галерея изображений */}
+          {/* Слайдер изображений */}
           {hasImages && (
             <>
-              <div className={`relative w-full ${styles.imageGallery}`}>
-                <Image
-                  src={images[currentImageIndex]}
-                  alt={`${task.title} - изображение ${currentImageIndex + 1}`}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 600px"
-                />
+              <div className={styles.sliderContainer}>
+                <div className={styles.slider}>
+                  {images.map((image, index) => (
+                    <div
+                      key={index}
+                      className={`${styles.slide} ${
+                        index === currentImageIndex ? styles.slideActive : ''
+                      }`}
+                    >
+                      <div
+                        className={styles.slideImage}
+                        onClick={() => handleOpenLightbox(index)}
+                      >
+                        <Image
+                          src={image}
+                          alt={`${task.title} - изображение ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="250px"
+                        />
+                        <div className={styles.zoomOverlay}>
+                          <Maximize2 className={styles.zoomIcon} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 
                 {/* Стрелки навигации */}
                 {images.length > 1 && (
                   <>
                     <button
                       onClick={handlePreviousImage}
-                      className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-all z-10 shadow-lg"
+                      className={styles.sliderNavButton}
+                      style={{ left: '0.5rem' }}
                       aria-label="Предыдущее изображение"
                     >
-                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <ChevronLeft className={styles.sliderNavIcon} />
                     </button>
                     <button
                       onClick={handleNextImage}
-                      className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-all z-10 shadow-lg"
+                      className={styles.sliderNavButton}
+                      style={{ right: '0.5rem' }}
                       aria-label="Следующее изображение"
                     >
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <ChevronRight className={styles.sliderNavIcon} />
                     </button>
                   </>
                 )}
                 
                 {/* Индикаторы (точки) */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  <div className={styles.sliderIndicators}>
                     {images.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`h-1.5 rounded-full transition-all ${
-                          index === currentImageIndex
-                            ? 'bg-primary w-6'
-                            : 'bg-white/60 hover:bg-white/80 w-1.5'
+                        className={`${styles.sliderIndicator} ${
+                          index === currentImageIndex ? styles.sliderIndicatorActive : ''
                         }`}
                         aria-label={`Изображение ${index + 1}`}
                       />
@@ -290,29 +347,50 @@ export default function TaskDetailPage() {
                   </div>
                 )}
               </div>
-              
-              {/* Миниатюры */}
-              {images.length > 1 && (
-                <div className={styles.thumbnails}>
-                  {images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`${styles.thumbnail} ${
-                        index === currentImageIndex ? styles.thumbnailActive : ''
-                      }`}
-                    >
-                      <Image
-                        src={image}
-                        alt={`Миниатюра ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
+
+              {/* Модальное окно для просмотра изображений */}
+              <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
+                <DialogContent className={styles.lightboxContent}>
+                  <div className={styles.lightboxContainer}>
+                    <Image
+                      src={images[lightboxImageIndex]}
+                      alt={`${task.title} - изображение ${lightboxImageIndex + 1}`}
+                      fill
+                      className="object-contain"
+                      sizes="90vw"
+                    />
+                    
+                    {/* Стрелки навигации в модальном окне */}
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={handleLightboxPrevious}
+                          className={styles.lightboxNavButton}
+                          style={{ left: '1rem' }}
+                          aria-label="Предыдущее изображение"
+                        >
+                          <ChevronLeft className={styles.lightboxNavIcon} />
+                        </button>
+                        <button
+                          onClick={handleLightboxNext}
+                          className={styles.lightboxNavButton}
+                          style={{ right: '1rem' }}
+                          aria-label="Следующее изображение"
+                        >
+                          <ChevronRight className={styles.lightboxNavIcon} />
+                        </button>
+                      </>
+                    )}
+                    
+                    {/* Индикатор текущего изображения */}
+                    {images.length > 1 && (
+                      <div className={styles.lightboxCounter}>
+                        {lightboxImageIndex + 1} / {images.length}
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
               
               <Separator />
             </>
