@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, MessageSquare } from 'lucide-react';
 import { Task, Category, Marketplace, BudgetType, TaskModerationStatus, UserRole } from '@prisma/client';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -18,16 +18,22 @@ interface TaskCardProps {
     createdInMode?: UserRole;
     marketplace: Marketplace[]; // Изменено на массив
     user: {
+      id: string;
       username?: string | null;
       name: string | null;
       email: string;
       avatarUrl?: string | null;
+      createdAt: Date;
     };
     tags: Array<{
       id: string;
       name: string;
     }>;
     images?: string[]; // Массив URL изображений (максимум 3)
+    _count?: {
+      responses: number;
+    };
+    views?: number; // Количество просмотров (опционально для обратной совместимости)
   };
   showModerationStatus?: boolean;
 }
@@ -71,12 +77,41 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
   // Форматирование цены
   const formatPrice = () => {
     if (!task.budget) return null;
+    return task.budget.toLocaleString('ru-RU');
+  };
+
+  // Функция для расчета времени на сайте
+  const getTimeOnSite = (createdAt: Date | string): string => {
+    // Преобразуем в Date, если это строка
+    const createdDate = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
     
-    if (task.budgetType === 'NEGOTIABLE') {
-      return `от ${task.budget.toLocaleString('ru-RU')} ₽`;
+    // Проверяем валидность даты
+    if (!(createdDate instanceof Date) || isNaN(createdDate.getTime())) {
+      return 'на сайте недавно';
     }
     
-    return `${task.budget.toLocaleString('ru-RU')} ₽`;
+    const now = new Date();
+    const diff = now.getTime() - createdDate.getTime();
+    
+    // Проверяем, что разница не отрицательная (на случай проблем с часовыми поясами)
+    if (diff < 0) {
+      return 'на сайте недавно';
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) {
+      const yearWord = years === 1 ? 'год' : years < 5 ? 'года' : 'лет';
+      return `на сайте ${years} ${yearWord}`;
+    } else if (months > 0) {
+      const monthWord = months === 1 ? 'месяц' : months < 5 ? 'месяца' : 'месяцев';
+      return `на сайте ${months} ${monthWord}`;
+    } else {
+      const dayWord = days === 1 ? 'день' : days < 5 ? 'дня' : 'дней';
+      return `на сайте ${days} ${dayWord}`;
+    }
   };
 
   // Функция для получения текста и стилей статуса модерации
@@ -182,6 +217,30 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
           <div className={styles.infoContainer}>
             <Link href={`/tasks/${task.id}`} className={styles.link}>
               <div className={styles.header}>
+                {/* Тег маркетплейса и статистика */}
+                <div className={styles.marketplaceTags}>
+                  {task.marketplace.map((mp) => (
+                    <Badge 
+                      key={mp}
+                      variant="outline" 
+                      className={`${styles.marketplaceTag} ${marketplaceColors[mp]} font-medium text-xs`}
+                    >
+                      {marketplaceLabels[mp]}
+                    </Badge>
+                  ))}
+                  <div className={styles.stats}>
+                    <span className={styles.statItem}>
+                      <Eye className={styles.statIcon} />
+                      {task.views ?? 0}
+                    </span>
+                    <span className={styles.statItem}>
+                      <MessageSquare className={styles.statIcon} />
+                      {task._count?.responses ?? 0}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Название */}
                 <div className={styles.titleRow}>
                   <h3 className={styles.title}>
                     {task.title}
@@ -195,45 +254,40 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
                     </Badge>
                   )}
                 </div>
-                <div className={styles.badges}>
-                  {task.marketplace.map((mp) => (
-                    <Badge 
-                      key={mp}
-                      variant="outline" 
-                      className={`${marketplaceColors[mp]} font-medium text-xs`}
-                    >
-                      {marketplaceLabels[mp]}
-                    </Badge>
-                  ))}
-                  {task.tags.slice(0, 3).map((tag) => (
-                    <Badge 
-                      key={tag.id} 
-                      variant="secondary" 
-                      className="text-xs font-normal"
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
+                
+                {/* Описание в одну строку */}
+                <div className={styles.description}>
+                  <p className={styles.descriptionText}>
+                    {task.description}
+                  </p>
                 </div>
-              </div>
-              
-              <div className={styles.description}>
-                <p className={styles.descriptionText}>
-                  {task.description}
-                </p>
-              </div>
-              
-              <div className={styles.footer}>
-                <div className={styles.priceSection}>
-                  {task.budget && (
-                    <span className={styles.price}>
-                      {formatPrice()}
-                    </span>
-                  )}
+                
+                {/* Блок с ценой и кнопкой подробнее */}
+                <div className={styles.footer}>
+                  <div className={styles.priceSection}>
+                    {task.budget && (
+                      <>
+                        {task.budgetType === 'NEGOTIABLE' && (
+                          <span className={styles.priceFrom}>от</span>
+                        )}
+                        <span className={styles.price}>
+                          {formatPrice()} ₽
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <Link 
+                    href={`/tasks/${task.id}`}
+                    className={styles.detailsButton}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Подробнее
+                  </Link>
                 </div>
               </div>
             </Link>
             
+            {/* Блок пользователя */}
             <div className={styles.userSection}>
               <Link 
                 href={`/users/${task.user.id}`}
@@ -247,31 +301,21 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
                     {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className={styles.userName}>
-                  {getDisplayName(task.user.username, task.user.email)}
-                </span>
-                <span className={styles.date}>
-                  {new Date(task.createdAt).toLocaleDateString('ru-RU', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                <div className={styles.userNameContainer}>
+                  <span className={styles.userName}>
+                    {getDisplayName(task.user.username, task.user.email)}
+                  </span>
+                  {/* Индикатор онлайн - пока заглушка, можно будет добавить реальную логику */}
+                  {/* Для демонстрации: можно добавить пропс isOnline или получать из API */}
+                  <div className={styles.onlineIndicator}>
+                    <span className={styles.onlineDot}></span>
+                    <span className={styles.onlineText}>онлайн</span>
+                  </div>
+                </div>
+                <span className={styles.timeOnSite}>
+                  {getTimeOnSite(task.user.createdAt)}
                 </span>
               </Link>
-              {isSellerMode ? (
-                <Badge 
-                  variant="outline" 
-                  className="bg-muted text-muted-foreground border-border font-medium text-xs"
-                >
-                  Заказчик
-                </Badge>
-              ) : (
-                <Badge 
-                  variant="outline" 
-                  className="bg-muted text-muted-foreground border-border font-medium text-xs"
-                >
-                  Исполнитель
-                </Badge>
-              )}
             </div>
           </div>
         </div>

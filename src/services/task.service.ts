@@ -16,6 +16,7 @@ const TASK_INCLUDE = {
       name: true,
       email: true,
       avatarUrl: true,
+      createdAt: true,
     },
   },
   category: {
@@ -58,12 +59,14 @@ export interface TaskWithRelations {
   createdInMode: UserRole;
   createdAt: Date;
   images: string[];
+  views: number;
   user: {
     id: string;
     username: string | null;
     name: string | null;
     email: string;
     avatarUrl: string | null;
+    createdAt: Date;
   };
   category: {
     id: string;
@@ -274,6 +277,7 @@ export async function getTasks(filters: TaskFiltersInput): Promise<PaginatedTask
           name: true,
           email: true,
           avatarUrl: true,
+          createdAt: true,
         },
       },
       category: {
