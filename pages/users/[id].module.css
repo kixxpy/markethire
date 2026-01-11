@@ -1,0 +1,25 @@
+/* Стили для страницы профиля пользователя */
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 767px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Адаптивность для планшетов */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Адаптивность для десктопов */
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

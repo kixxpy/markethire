@@ -97,6 +97,38 @@
     @apply bg-background text-foreground;
     font-family: var(--font-inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
   }
+  
+  /* Градиентный фон для светлой темы */
+  html:not(.dark) body {
+    position: relative;
+    background: #f6f9ff;
+    min-height: 100vh;
+  }
+  
+  html:not(.dark) body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(
+        circle at 20% 30%,
+        rgba(120, 150, 255, 0.45),
+        rgba(120, 150, 255, 0) 60%
+      ),
+      radial-gradient(
+        circle at 80% 65%,
+        rgba(170, 120, 255, 0.35),
+        rgba(170, 120, 255, 0) 60%
+      ),
+      radial-gradient(
+        circle at 50% 100%,
+        rgba(255, 255, 255, 0.8),
+        rgba(255, 255, 255, 0) 70%
+      );
+    filter: blur(60px);
+    z-index: -1;
+    pointer-events: none;
+  }
 }
 
 @layer utilities {
@@ -155,14 +187,15 @@
   animation: gradient-shift 15s ease infinite;
 }
 
-/* Плавные переходы для всех интерактивных элементов */
+/* Плавные переходы для всех интерактивных элементов - оптимизировано */
 a, button {
-  transition: all 0.2s ease-in-out;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-in-out, opacity 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
-/* Улучшенная анимация для карточек при наведении */
+/* Улучшенная анимация для карточек при наведении - оптимизировано */
 .card-hover-effect {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
 }
 
 .card-hover-effect:hover {
@@ -207,13 +240,31 @@ a, button {
   }
 }
 
-/* Анимация для иконок */
+/* Анимация для иконок - оптимизировано */
 .icon-bounce {
   transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .icon-bounce:hover {
   transform: scale(1.1);
+}
+
+/* Отключение анимаций для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animated-gradient,
+  .skeleton-shimmer {
+    animation: none !important;
+  }
 }
 
 /* Плавная анимация для модальных окон */

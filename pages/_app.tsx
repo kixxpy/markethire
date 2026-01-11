@@ -63,16 +63,24 @@ export default function App({ Component, pageProps }: AppProps) {
     document.documentElement.classList.add(inter.className);
   }, []);
 
-  // Инициализация AOS (Animate On Scroll)
+  // Инициализация AOS (Animate On Scroll) - оптимизировано
   useEffect(() => {
-    AOS.init({
-      duration: 800,
-      easing: 'ease-in-out',
-      once: true,
-      offset: 100,
-      delay: 0,
-      disable: false,
-    });
+    // Отключить на мобильных устройствах и для пользователей с prefers-reduced-motion
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      if (!isMobile && !prefersReducedMotion) {
+        AOS.init({
+          duration: 500, // Уменьшено с 800
+          easing: 'ease-out', // Упрощено с ease-in-out
+          once: true,
+          offset: 50, // Уменьшено с 100
+          delay: 0,
+          disable: false,
+        });
+      }
+    }
   }, []);
 
   useEffect(() => {

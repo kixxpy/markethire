@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../ui/input';
 import { Search, X } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -36,19 +35,11 @@ export default function SearchBar({
   };
 
   return (
-    <motion.div
-      className={`${styles.searchBar} ${className}`}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={`${styles.searchBar} ${className}`}>
       <div className={styles.searchWrapper}>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.2 }}
-        >
+        <div className={styles.searchIconWrapper}>
           <Search className={styles.searchIcon} />
-        </motion.div>
+        </div>
         <Input
           type="text"
           value={localValue}
@@ -56,27 +47,20 @@ export default function SearchBar({
           placeholder={placeholder}
           className={styles.searchInput}
         />
-        <AnimatePresence>
-          {localValue && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
+        {localValue && (
+          <div className={styles.clearButtonWrapper}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className={styles.clearButton}
+              aria-label="Очистить поиск"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className={styles.clearButton}
-                aria-label="Очистить поиск"
-              >
-                <X className={styles.clearIcon} />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <X className={styles.clearIcon} />
+            </Button>
+          </div>
+        )}
       </div>
-    </motion.div>
+    </div>
   );
 }

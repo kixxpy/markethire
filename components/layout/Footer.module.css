@@ -63,11 +63,12 @@
   font-size: 14px;
   color: hsl(var(--muted-foreground));
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .link:hover {
   color: hsl(var(--foreground));
+  transform: translateX(4px);
 }
 
 .linkIcon {

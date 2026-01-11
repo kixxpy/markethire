@@ -1,16 +1,10 @@
-import { motion } from 'framer-motion';
 import { Card } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import styles from './TaskCardSkeleton.module.css';
 
 export default function TaskCardSkeleton() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className={styles.card}>
+    <Card className={styles.card}>
         <div className={styles.cardContent}>
           {/* Левая часть - изображение */}
           <div className={styles.imageContainer}>
@@ -54,6 +48,5 @@ export default function TaskCardSkeleton() {
           </div>
         </div>
       </Card>
-    </motion.div>
   );
 }

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface TaskListProps {
@@ -8,19 +7,8 @@ interface TaskListProps {
 
 export function TaskList({ children, className = '' }: TaskListProps) {
   return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      animate="visible"
-      variants={{
-        visible: {
-          transition: {
-            staggerChildren: 0.1,
-          },
-        },
-      }}
-    >
+    <div className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }

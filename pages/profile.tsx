@@ -80,7 +80,10 @@ export default function ProfilePage() {
       updateUser(response.user);
       setProfile(response.user);
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      // Редирект на главную страницу после успешного сохранения
+      setTimeout(() => {
+        router.push('/');
+      }, 500);
     } catch (err: any) {
       setError(err.message || 'Ошибка обновления профиля');
     }
