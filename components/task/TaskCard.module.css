@@ -116,6 +116,14 @@
   gap: 8px;
 }
 
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
 .title {
   font-size: 20px;
   font-weight: 700;
@@ -126,6 +134,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
 .badges {
@@ -172,15 +182,18 @@
   color: hsl(var(--foreground));
 }
 
-.duration {
-  font-size: 12px;
-  color: hsl(var(--muted-foreground));
+.userSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-.userSection {
+.userInfoRow {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .avatar {
@@ -200,6 +213,50 @@
   margin-left: auto;
 }
 
+.moderationPending {
+  background: hsl(45, 93%, 47%);
+  color: hsl(0, 0%, 100%);
+  border-color: hsl(45, 93%, 47%);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.moderationApproved {
+  background: hsl(142, 76%, 36%);
+  color: hsl(0, 0%, 100%);
+  border-color: hsl(142, 76%, 36%);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.moderationRejected {
+  background: hsl(0, 84%, 60%);
+  color: hsl(0, 0%, 100%);
+  border-color: hsl(0, 84%, 60%);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.moderationRevision {
+  background: hsl(217, 91%, 60%);
+  color: hsl(0, 0%, 100%);
+  border-color: hsl(217, 91%, 60%);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Tablet (768px - 1023px) */
 @media (max-width: 1023px) {
   .imageContainer {
@@ -209,6 +266,14 @@
 
   .title {
     font-size: 18px;
+  }
+
+  .moderationPending,
+  .moderationApproved,
+  .moderationRejected,
+  .moderationRevision {
+    font-size: 10px;
+    padding: 3px 6px;
   }
 
   .price {
@@ -238,8 +303,23 @@
     height: 200px;
   }
 
+  .titleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   .title {
     font-size: 18px;
+  }
+
+  .moderationPending,
+  .moderationApproved,
+  .moderationRejected,
+  .moderationRevision {
+    font-size: 10px;
+    padding: 3px 6px;
+    align-self: flex-start;
   }
 
   .footer {
@@ -252,8 +332,12 @@
     width: 100%;
   }
 
+  .userInfoRow {
+    width: 100%;
+  }
+
   .date {
-    margin-left: 0;
+    margin-left: auto;
   }
 
   .navButton {
@@ -275,6 +359,14 @@
 
   .title {
     font-size: 16px;
+  }
+
+  .moderationPending,
+  .moderationApproved,
+  .moderationRejected,
+  .moderationRevision {
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
   .price {

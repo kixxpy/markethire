@@ -30,7 +30,14 @@ export async function getCategories(): Promise<CategoryWithTags[]> {
     },
   });
 
-  return categories;
+  // Сортируем так, чтобы "Другое" всегда было в конце
+  const sortedCategories = [...categories].sort((a, b) => {
+    if (a.name === "Другое") return 1;
+    if (b.name === "Другое") return -1;
+    return a.name.localeCompare(b.name, "ru");
+  });
+
+  return sortedCategories;
 }
 
 /**

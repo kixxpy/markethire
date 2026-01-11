@@ -7,10 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum Marketplace {
   WB
   OZON
+  YANDEX_MARKET
+  LAMODA
 }
 
 enum BudgetType {
@@ -38,23 +39,23 @@ enum UserRole {
 }
 
 model User {
-  id            String      @id @default(cuid())
-  name          String?
-  username      String      @unique
-  email         String      @unique
-  password      String?
-  role          UserRole    @default(BOTH)
-  createdAt     DateTime    @default(now())
-  avatarUrl     String?
+  id        String   @id @default(cuid())
+  name      String?
+  username  String   @unique
+  email     String   @unique
+  password  String?
+  role      UserRole @default(BOTH)
+  createdAt DateTime @default(now())
+  avatarUrl String?
 
   // Контакты
-  telegram      String?
-  whatsapp      String?
-  emailContact  String?
+  telegram     String?
+  whatsapp     String?
+  emailContact String?
 
   // Исполнитель
-  description   String?
-  priceFrom     Int?
+  description String?
+  priceFrom   Int?
 
   tasks         Task[]
   responses     Response[]
@@ -66,30 +67,31 @@ model User {
 }
 
 model Task {
-  id           String        @id @default(cuid())
-  userId       String
-  user         User          @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  marketplace  Marketplace
-  categoryId   String
-  category     Category      @relation(fields: [categoryId], references: [id])
+  marketplace Marketplace[]
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id])
 
-  title        String
-  description  String
-  budget       Int?
-  budgetType   BudgetType    @default(FIXED)
-  status       TaskStatus    @default(OPEN)
-  moderationStatus TaskModerationStatus @default(PENDING)
+  title             String
+  description       String
+  budget            Int?
+  budgetType        BudgetType           @default(FIXED)
+  status            TaskStatus           @default(OPEN)
+  moderationStatus  TaskModerationStatus @default(PENDING)
   moderationComment String?
-  moderatedAt  DateTime?
-  moderatedBy  String?
-  createdInMode UserRole    @default(SELLER)
-  images       String[]     @default([]) // Массив URL изображений (максимум 3)
+  moderatedAt       DateTime?
+  moderatedBy       String?
+  createdInMode     UserRole             @default(SELLER)
+  images            String[]             @default([]) // Массив URL изображений (максимум 3)
 
-  responses    Response[]
-  tags         TaskTag[]
+  responses         Response[]
+  tags              TaskTag[]
+  moderationHistory TaskModerationHistory[]
 
-  createdAt    DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   @@index([createdAt])
   @@index([moderationStatus])
@@ -100,18 +102,18 @@ model Task {
 }
 
 model Response {
-  id         String    @id @default(cuid())
-  taskId    String
-  userId    String
+  id     String @id @default(cuid())
+  taskId String
+  userId String
 
-  task       Task     @relation(fields: [taskId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-  message    String
-  price      Int?
-  deadline   String?
+  message  String
+  price    Int?
+  deadline String?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([taskId])
   @@index([userId])
@@ -119,21 +121,21 @@ model Response {
 }
 
 model Category {
-  id    String  @id @default(cuid())
-  name  String  @unique
+  id   String @id @default(cuid())
+  name String @unique
 
   tags  Tag[]
   tasks Task[]
 }
 
 model Tag {
-  id          String   @id @default(cuid())
-  name        String
+  id         String   @id @default(cuid())
+  name       String
   categoryId String
-  category    Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  tasks       TaskTag[]
-  users       UserTag[]
+  tasks TaskTag[]
+  users UserTag[]
 
   @@unique([name, categoryId])
 }
@@ -142,8 +144,8 @@ model TaskTag {
   taskId String
   tagId  String
 
-  task   Task @relation(fields: [taskId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
 
   @@id([taskId, tagId])
 }
@@ -152,8 +154,8 @@ model UserTag {
   userId String
   tagId  String
 
-  user   User @relation(fields: [userId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
 
   @@id([userId, tagId])
 }
@@ -162,12 +164,12 @@ model Notification {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  type      String   // 'NEW_RESPONSE', 'TASK_CLOSED', 'TASK_ACCEPTED', etc.
+  type      String // 'NEW_RESPONSE', 'TASK_CLOSED', 'TASK_ACCEPTED', etc.
   role      UserRole // Для фильтрации по роли
   title     String
   message   String
   read      Boolean  @default(false)
-  link      String?  // URL для перехода
+  link      String? // URL для перехода
   createdAt DateTime @default(now())
 
   @@index([userId, read])
@@ -176,12 +178,35 @@ model Notification {
 
 model Ad {
   id        String   @id @default(cuid())
-  imageUrl  String   // URL изображения рекламы
-  link      String?  // Ссылка для перехода при клике
+  imageUrl  String // URL изображения рекламы
+  link      String? // Ссылка для перехода при клике
   position  Int      @default(0) // Позиция для сортировки
   isActive  Boolean  @default(true) // Активна ли реклама
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([isActive, position])
+}
+
+model TaskModerationHistory {
+  id     String @id @default(cuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Данные до изменения
+  previousData Json // JSON с предыдущими значениями
+
+  // Данные после изменения
+  newData Json // JSON с новыми значениями
+
+  // Измененные поля
+  changedFields String[] // Массив имен измененных полей
+
+  // Метаданные
+  changedBy String // userId того, кто внес изменения
+  reason    String? // Причина изменения (например, "Редактирование пользователем")
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([createdAt])
 }

@@ -40,15 +40,15 @@ export default function Home() {
       <section className="grid gap-10 lg:grid-cols-2 items-center">
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Площадка, где продавцы находят исполнителей для задач по маркетплейсам
+            Площадка, где заказчики находят исполнителей для задач по маркетплейсам
           </h1>
           <p className="text-lg text-muted-foreground">
-            Создавайте задачи как продавец или предлагайте свои услуги как исполнитель.
+            Создавайте задачи как заказчик или предлагайте свои услуги как исполнитель.
             Прозрачные условия, удобный поиск, понятные фильтры.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button asChild size="lg">
-              <Link href="/tasks/seller">Смотреть задачи продавцов</Link>
+              <Link href="/tasks/seller">Смотреть задачи заказчиков</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link href="/tasks/executor">Смотреть услуги исполнителей</Link>
@@ -59,7 +59,7 @@ export default function Home() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Для продавцов</CardTitle>
+              <CardTitle>Для заказчиков</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>— Размещайте задачи по оформлению карточек, рекламе, аналитике и другим задачам.</p>
@@ -74,7 +74,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>— Создавайте свои «услуги» в режиме исполнителя.</p>
-              <p>— Получайте заказы от продавцов, которым нужен именно ваш формат работы.</p>
+              <p>— Получайте заказы от заказчиков, которым нужен именно ваш формат работы.</p>
               <p>— Формируйте портфолио и зарабатывайте на экспертизе.</p>
             </CardContent>
           </Card>
@@ -89,7 +89,7 @@ export default function Home() {
               <CardTitle className="text-lg">1. Выбираете роль</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Зарегистрируйтесь как продавец, исполнитель или выберите обе роли,
+              Зарегистрируйтесь как заказчик, исполнитель или выберите обе роли,
               если и размещаете задачи, и выполняете их.
             </CardContent>
           </Card>
@@ -99,7 +99,7 @@ export default function Home() {
               <CardTitle className="text-lg">2. Публикуете задачи или услуги</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              В режиме продавца — создавайте задачи под свои потребности.
+              В режиме заказчика — создавайте задачи под свои потребности.
               В режиме исполнителя — создавайте услуги, которые вы готовы оказать.
             </CardContent>
           </Card>

@@ -29,7 +29,7 @@ export default function EditTaskPage() {
         return;
       }
       setTask({
-        marketplace: data.marketplace,
+        marketplace: Array.isArray(data.marketplace) ? data.marketplace : [data.marketplace],
         categoryId: data.categoryId,
         title: data.title,
         description: data.description,

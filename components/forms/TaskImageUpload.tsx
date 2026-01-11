@@ -140,7 +140,7 @@ export default function TaskImageUpload({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Изображения (максимум {maxImages})</label>
+      <label className="text-sm font-medium">Изображения (необязательно, максимум {maxImages})</label>
       
       <div className="grid grid-cols-3 gap-4">
         {/* Существующие изображения */}

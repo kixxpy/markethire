@@ -1,0 +1,106 @@
+.navigation {
+  width: 100%;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(8px);
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .navigation {
+    background-color: hsl(var(--background) / 0.6);
+  }
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+.navContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background-color: hsl(var(--accent) / 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  justify-content: center;
+}
+
+.navItem {
+  flex-shrink: 0;
+}
+
+.navLink {
+  height: 32px;
+  width: 100px;
+  border-radius: 6px;
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .navContainer {
+    gap: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+  }
+
+  .navList {
+    gap: 8px;
+  }
+
+  .navLink {
+    height: 36px;
+    width: 120px;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .navContainer {
+    padding: 8px 12px;
+  }
+
+  .navList {
+    gap: 8px;
+  }
+
+  .navLink {
+    height: 40px;
+    width: 140px;
+  }
+}
+
+/* Small Mobile (до 480px) */
+@media (max-width: 479px) {
+  .navContainer {
+    padding: 6px;
+    margin: 6px 0;
+  }
+
+  .navList {
+    gap: 4px;
+  }
+
+  .navLink {
+    height: 28px;
+    width: 80px;
+  }
+}

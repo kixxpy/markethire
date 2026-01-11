@@ -45,7 +45,13 @@ export default function PerformersPage() {
   const loadCategories = async () => {
     try {
       const data = await api.get<Category[]>('/api/categories');
-      setCategories(data);
+      // Сортируем так, чтобы "Другое" всегда было в конце
+      const sorted = [...data].sort((a, b) => {
+        if (a.name === "Другое") return 1;
+        if (b.name === "Другое") return -1;
+        return a.name.localeCompare(b.name, "ru");
+      });
+      setCategories(sorted);
     } catch (error) {
       console.error('Ошибка загрузки категорий:', error);
     }

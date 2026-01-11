@@ -80,6 +80,7 @@
 @media (min-width: 1440px) {
   .container {
     max-width: 1600px;
+    padding: 0 24px;
   }
 
   .mobileAdBlock {
@@ -88,11 +89,19 @@
 
   .sidebar {
     display: block;
+  }
+
+  .title {
+    font-size: 36px;
   }
 }
 
 /* Desktop (1280px - 1439px) */
 @media (min-width: 1280px) and (max-width: 1439px) {
+  .container {
+    padding: 0 20px;
+  }
+
   .mobileAdBlock {
     display: none;
   }
@@ -100,10 +109,18 @@
   .sidebar {
     display: block;
   }
+
+  .title {
+    font-size: 32px;
+  }
 }
 
 /* Medium Desktop (1024px - 1279px) */
 @media (min-width: 1024px) and (max-width: 1279px) {
+  .container {
+    padding: 0 16px;
+  }
+
   .content {
     gap: 20px;
   }
@@ -116,33 +133,9 @@
     display: block;
     width: 240px;
   }
-}
-
-/* Tablet (768px - 1019px) */
-@media (min-width: 768px) and (max-width: 1019px) {
-  .container {
-    padding: 0 16px;
-  }
 
   .title {
     font-size: 28px;
-  }
-
-  .content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .mobileAdBlock {
-    display: block;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
-  .mainContent {
-    order: 1;
   }
 }
 
@@ -166,6 +159,59 @@
   .mainContent {
     order: 1;
   }
+
+  .title {
+    font-size: 28px;
+  }
+}
+
+/* Tablet (768px - 1019px) */
+@media (min-width: 768px) and (max-width: 1019px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .searchSection {
+    margin-bottom: 20px;
+  }
+
+  .searchWrapper {
+    gap: 10px;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .mobileAdBlock {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mainContent {
+    order: 1;
+  }
+
+  .grid {
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .pagination {
+    margin-top: 24px;
+  }
 }
 
 /* Mobile (480px - 767px) */
@@ -184,6 +230,11 @@
 
   .searchSection {
     margin-bottom: 20px;
+  }
+
+  .searchWrapper {
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .content {
@@ -219,8 +270,20 @@
     padding: 0 8px;
   }
 
+  .header {
+    margin-bottom: 16px;
+  }
+
   .title {
     font-size: 20px;
+  }
+
+  .searchSection {
+    margin-bottom: 16px;
+  }
+
+  .searchWrapper {
+    gap: 6px;
   }
 
   .grid {

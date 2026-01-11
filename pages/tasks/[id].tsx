@@ -30,6 +30,7 @@ import {
 } from '../../components/ui/dialog';
 import { toast } from 'sonner';
 import { getDisplayName } from '../../src/lib/utils';
+import FormattedText from '../../src/components/common/FormattedText';
 import styles from './[id].module.css';
 
 interface TaskWithRelations extends Task {
@@ -398,7 +399,10 @@ export default function TaskDetailPage() {
 
           <div>
             <h2 className="text-lg font-semibold mb-2">Описание</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{task.description}</p>
+            <FormattedText 
+              text={task.description || ''} 
+              className="text-muted-foreground"
+            />
           </div>
 
           <Separator />

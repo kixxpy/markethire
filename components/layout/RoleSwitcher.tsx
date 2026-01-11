@@ -91,7 +91,7 @@ export function RoleSwitcher() {
   };
 
   const getModeLabel = (mode: 'SELLER' | 'PERFORMER') => {
-    return mode === 'SELLER' ? 'Режим продавца' : 'Режим исполнителя';
+    return mode === 'SELLER' ? 'Режим заказчика' : 'Режим исполнителя';
   };
 
   const getModeIcon = (mode: 'SELLER' | 'PERFORMER') => {
@@ -116,7 +116,7 @@ export function RoleSwitcher() {
                 {getModeLabel(activeMode)}
               </span>
               <span className="sm:hidden">
-                {activeMode === 'SELLER' ? 'Продавец' : 'Исполнитель'}
+                {activeMode === 'SELLER' ? 'Заказчик' : 'Исполнитель'}
               </span>
             </>
           ) : (
@@ -166,7 +166,7 @@ export function RoleSwitcher() {
                       "font-medium",
                       activeMode === 'SELLER' && "text-seller-primary"
                     )}>
-                      Продавец
+                      Заказчик
                     </span>
                     {activeMode === 'SELLER' && (
                       <Check className="h-3 w-3 text-seller-primary" />

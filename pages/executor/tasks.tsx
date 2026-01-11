@@ -3,12 +3,13 @@ import { useRouter } from 'next/router';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
 import TaskCard from '../../components/task/TaskCard';
+import TaskCardSkeleton from '../../components/task/TaskCardSkeleton';
 import { TaskPagesSwitcher } from '../../components/task/TaskPagesSwitcher';
 import Link from 'next/link';
 import { Task, Category } from '@prisma/client';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
-import { Skeleton } from '../../components/ui/skeleton';
+import styles from './tasks.module.css';
 
 interface TaskWithRelations extends Task {
   category: Category;
@@ -71,36 +72,36 @@ export default function ExecutorTasksPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Мои услуги (как исполнитель)</h1>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Мои услуги (как исполнитель)</h1>
           <TaskPagesSwitcher />
         </div>
-        <Button asChild>
+        <Button asChild className={styles.createButton}>
           <Link href="/tasks/create">Создать услугу</Link>
         </Button>
       </div>
 
       {loading ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Skeleton className="h-4 w-32 mx-auto" />
-          </CardContent>
-        </Card>
+        <div className={styles.grid}>
+          {[...Array(3)].map((_, i) => (
+            <TaskCardSkeleton key={i} />
+          ))}
+        </div>
       ) : tasks.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">Здесь будут ваши услуги, созданные в режиме исполнителя</p>
-            <Button asChild>
+        <Card className={styles.card}>
+          <CardContent className={styles.emptyCardContent}>
+            <p className={styles.emptyText}>Здесь будут ваши услуги, созданные в режиме исполнителя</p>
+            <Button asChild className={styles.emptyButton}>
               <Link href="/tasks/create">Создать первую услугу</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={styles.grid}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} showModerationStatus={true} />
           ))}
         </div>
       )}

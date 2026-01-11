@@ -38,7 +38,7 @@ export default function SellerOnboarding() {
             <Briefcase className="h-8 w-8 text-seller-primary" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold">Добро пожаловать в режим Seller</h1>
+        <h1 className="text-4xl font-bold">Добро пожаловать в режим Заказчика</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Вы работаете как заказчик. Находите экспертов и делегируйте задачи для достижения ваших целей.
         </p>

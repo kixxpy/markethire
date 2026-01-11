@@ -1,0 +1,233 @@
+.card {
+  width: 100%;
+  height: auto;
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+}
+
+.imageContainer {
+  position: relative;
+  flex-shrink: 0;
+  width: 250px;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.imageSkeleton {
+  width: 100%;
+  height: 100%;
+}
+
+.infoContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.titleSkeleton {
+  height: 28px;
+  flex: 1;
+  min-width: 0;
+}
+
+.badgeSkeleton {
+  width: 100px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.smallBadgeSkeleton {
+  width: 80px;
+  height: 22px;
+  border-radius: 9999px;
+}
+
+.description {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.descriptionLine {
+  height: 16px;
+  width: 100%;
+}
+
+.descriptionLineShort {
+  height: 16px;
+  width: 70%;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.priceSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.priceSkeleton {
+  height: 32px;
+  width: 120px;
+}
+
+.userSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.userInfoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.avatarSkeleton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.userNameSkeleton {
+  height: 20px;
+  width: 120px;
+}
+
+.dateSkeleton {
+  height: 16px;
+  width: 60px;
+  margin-left: auto;
+}
+
+.roleBadgeSkeleton {
+  height: 22px;
+  width: 90px;
+  border-radius: 9999px;
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) {
+  .imageContainer {
+    width: 200px;
+    height: 150px;
+  }
+
+  .titleSkeleton {
+    height: 26px;
+  }
+
+  .priceSkeleton {
+    height: 28px;
+    width: 100px;
+  }
+}
+
+/* Mobile (480px - 767px) */
+@media (max-width: 767px) {
+  .cardContent {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .imageContainer {
+    width: 100%;
+    height: 200px;
+  }
+
+  .titleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .titleSkeleton {
+    height: 26px;
+    width: 100%;
+  }
+
+  .badgeSkeleton {
+    align-self: flex-start;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .userSection {
+    width: 100%;
+  }
+
+  .userInfoRow {
+    width: 100%;
+  }
+
+  .dateSkeleton {
+    margin-left: auto;
+  }
+}
+
+/* Small Mobile (до 480px) */
+@media (max-width: 479px) {
+  .cardContent {
+    padding: 12px;
+  }
+
+  .imageContainer {
+    height: 180px;
+  }
+
+  .titleSkeleton {
+    height: 24px;
+  }
+
+  .priceSkeleton {
+    height: 26px;
+    width: 90px;
+  }
+}

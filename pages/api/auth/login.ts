@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { loginUser } from "../../../src/services/user.service";
 import { loginSchema } from "../../../src/lib/validation";
-import { rateLimiters } from "../../../src/middleware/rate-limit";
 import { corsMiddleware } from "../../../src/middleware/cors";
 import { validateBodySize } from "../../../src/middleware/body-parser";
 import { logger } from "../../../src/lib/logger";
@@ -82,9 +81,7 @@ export default async function wrappedHandler(
   return new Promise<void>((resolve) => {
     corsMiddleware(req, res, () => {
       validateBodySize(req, res, () => {
-        rateLimiters.auth(req, res, () => {
-          handler(req, res).then(resolve).catch(resolve);
-        });
+        handler(req, res).then(resolve).catch(resolve);
       });
     });
   });

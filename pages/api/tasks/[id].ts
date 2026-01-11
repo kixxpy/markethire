@@ -95,7 +95,20 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
 
     console.error("Ошибка работы с задачей:", error);
-    return res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    console.error("Детали ошибки:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      body: req.body,
+    });
+    return res.status(500).json({ 
+      error: "Внутренняя ошибка сервера",
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: error.stack,
+        name: error.name,
+      } : undefined,
+    });
   }
 }
 

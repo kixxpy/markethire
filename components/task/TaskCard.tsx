@@ -40,10 +40,10 @@ const marketplaceLabels: Record<Marketplace, string> = {
 };
 
 const marketplaceColors: Record<Marketplace, string> = {
-  WB: 'bg-blue-100 text-blue-800 border-blue-200',
-  OZON: 'bg-orange-100 text-orange-800 border-orange-200',
-  YANDEX_MARKET: 'bg-red-100 text-red-800 border-red-200',
-  LAMODA: 'bg-purple-100 text-purple-800 border-purple-200',
+  WB: 'bg-purple-100 text-purple-800 border-purple-200',
+  OZON: 'bg-blue-100 text-blue-800 border-blue-200',
+  YANDEX_MARKET: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  LAMODA: 'bg-gray-100 text-gray-800 border-gray-200',
 };
 
 export default function TaskCard({ task, showModerationStatus = false }: TaskCardProps) {

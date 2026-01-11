@@ -1,0 +1,175 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(8px);
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .navbar {
+    background-color: hsl(var(--background) / 0.6);
+  }
+}
+
+.container {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.logo {
+  width: 120px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+
+.navLinks {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.navLink {
+  height: 32px;
+  width: 100px;
+  border-radius: 6px;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.roleSwitcher {
+  width: 100px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.profileLink {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  width: 140px;
+  border-radius: 6px;
+}
+
+.logoutButton {
+  height: 36px;
+  width: 90px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.mobileMenuButton {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) {
+  .container {
+    height: 64px;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .leftSection {
+    gap: 24px;
+  }
+
+  .logo {
+    width: 140px;
+    height: 36px;
+  }
+
+  .navLinks {
+    display: flex;
+    gap: 8px;
+  }
+
+  .navLink {
+    width: 120px;
+    height: 36px;
+  }
+
+  .rightSection {
+    gap: 16px;
+  }
+
+  .iconButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .roleSwitcher {
+    width: 120px;
+    height: 40px;
+  }
+
+  .profileLink {
+    display: flex;
+    width: 160px;
+    height: 40px;
+  }
+
+  .logoutButton {
+    width: 100px;
+    height: 40px;
+  }
+
+  .mobileMenuButton {
+    display: none;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .leftSection {
+    gap: 24px;
+  }
+
+  .navLinks {
+    gap: 8px;
+  }
+
+  .navLink {
+    width: 140px;
+  }
+
+  .profileLink {
+    width: 180px;
+  }
+}

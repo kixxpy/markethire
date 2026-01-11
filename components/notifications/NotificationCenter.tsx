@@ -255,7 +255,7 @@ export function NotificationCenter() {
         <SheetHeader>
           <SheetTitle>Уведомления</SheetTitle>
           <SheetDescription>
-            {activeMode === 'SELLER' && 'Уведомления для режима Seller'}
+            {activeMode === 'SELLER' && 'Уведомления для режима Заказчика'}
             {activeMode === 'PERFORMER' && 'Уведомления для режима Executor'}
             {!activeMode && 'Все уведомления'}
           </SheetDescription>

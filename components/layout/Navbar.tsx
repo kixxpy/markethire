@@ -71,12 +71,12 @@ export function Navbar() {
 
   const navLinks = getNavLinks();
 
-  // Ссылки для шапки профиля (Задачи продавцов и Услуги исполнителей)
+  // Ссылки для шапки профиля (Задачи заказчиков и Услуги исполнителей)
   // Теперь доступны и для администратора
   const profileHeaderLinks = [
     { 
       href: '/tasks/seller', 
-      label: 'Задачи продавцов', 
+      label: 'Задачи заказчиков', 
       icon: <Briefcase className="h-4 w-4" />
     },
     { 

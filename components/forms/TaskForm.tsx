@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTaskSchema } from '../../src/lib/validation';
@@ -15,14 +15,14 @@ import { toast } from 'sonner';
 import TaskImageUpload from './TaskImageUpload';
 
 type TaskFormData = {
-  marketplace: 'WB' | 'OZON';
+  marketplace: ('WB' | 'OZON' | 'YANDEX_MARKET' | 'LAMODA')[];
   categoryId: string;
   title: string;
   description: string;
   budget?: number;
   budgetType: 'FIXED' | 'NEGOTIABLE';
-  tagIds?: string[];
   images?: string[];
+  tagIds?: string[];
 };
 
 interface TaskFormProps {
@@ -36,32 +36,56 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const router = useRouter();
   const { activeMode } = useAuthStore();
+  const previousCategoryIdRef = useRef<string | undefined>(initialData?.categoryId);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
       budgetType: 'FIXED',
-      tagIds: [],
       images: [],
+      marketplace: initialData?.marketplace || [],
+      tagIds: initialData?.tagIds || [],
       ...initialData,
     },
   });
 
   const selectedCategoryId = form.watch('categoryId');
-  const selectedTags = form.watch('tagIds') || [];
+  const selectedMarketplaces = form.watch('marketplace') || [];
+  const selectedTagIds = form.watch('tagIds') || [];
+  const budgetType = form.watch('budgetType');
+
+  const marketplaceOptions = [
+    { value: 'WB' as const, label: 'Wildberries' },
+    { value: 'OZON' as const, label: 'OZON' },
+    { value: 'YANDEX_MARKET' as const, label: 'ЯндексМаркет' },
+    { value: 'LAMODA' as const, label: 'Lamoda' },
+  ];
+
+  const toggleMarketplace = (value: 'WB' | 'OZON' | 'YANDEX_MARKET' | 'LAMODA') => {
+    const current = selectedMarketplaces;
+    const newMarketplaces = current.includes(value)
+      ? current.filter(m => m !== value)
+      : [...current, value];
+    form.setValue('marketplace', newMarketplaces);
+  };
 
   useEffect(() => {
     loadCategories();
   }, []);
 
+  // Загрузка тегов при выборе категории
   useEffect(() => {
     if (selectedCategoryId) {
-      loadTags(selectedCategoryId);
+      const categoryChanged = previousCategoryIdRef.current !== selectedCategoryId;
+      loadTags(selectedCategoryId, categoryChanged);
+      previousCategoryIdRef.current = selectedCategoryId;
     } else {
       setTags([]);
       form.setValue('tagIds', []);
+      previousCategoryIdRef.current = undefined;
     }
-  }, [selectedCategoryId, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId]);
 
   // Синхронизация images с формой
   useEffect(() => {
@@ -71,26 +95,38 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const loadCategories = async () => {
     try {
       const data = await api.get<Category[]>('/api/categories');
-      setCategories(data);
+      // Сортируем так, чтобы "Другое" всегда было в конце
+      const sorted = [...data].sort((a, b) => {
+        if (a.name === "Другое") return 1;
+        if (b.name === "Другое") return -1;
+        return a.name.localeCompare(b.name, "ru");
+      });
+      setCategories(sorted);
     } catch (error) {
       console.error('Ошибка загрузки категорий:', error);
     }
   };
 
-  const loadTags = async (categoryId: string) => {
+  const loadTags = async (categoryId: string, clearSelectedTags: boolean = false) => {
     try {
       const data = await api.get<Tag[]>(`/api/tags?categoryId=${categoryId}`);
       setTags(data);
+      // Очищаем выбранные теги только при смене категории
+      if (clearSelectedTags) {
+        form.setValue('tagIds', []);
+      }
     } catch (error) {
       console.error('Ошибка загрузки тегов:', error);
+      setTags([]);
     }
   };
 
   const toggleTag = (tagId: string) => {
-    const newTags = selectedTags.includes(tagId)
-      ? selectedTags.filter(id => id !== tagId)
-      : [...selectedTags, tagId];
-    form.setValue('tagIds', newTags);
+    const current = selectedTagIds;
+    const newTagIds = current.includes(tagId)
+      ? current.filter(id => id !== tagId)
+      : [...current, tagId];
+    form.setValue('tagIds', newTagIds);
   };
 
   // Конвертация data URI в Blob без использования fetch (для соответствия CSP)
@@ -154,11 +190,15 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
         toast.success('Задача обновлена');
       } else {
         // При создании: создаем задачу, затем загружаем изображения
-        const response = await api.post<{ task: { id: string } }>('/api/tasks', {
+        const taskData: any = {
           ...data,
           createdInMode: activeMode || 'SELLER',
-          images: [], // Сначала создаем без изображений
-        });
+        };
+        // Не отправляем images, если массив пустой (валидатор ожидает либо undefined, либо массив с URL)
+        if (images.length > 0) {
+          taskData.images = images;
+        }
+        const response = await api.post<{ task: { id: string } }>('/api/tasks', taskData);
 
         const newTaskId = response.task.id;
 
@@ -209,18 +249,28 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
           name="marketplace"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Маркетплейс *</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите маркетплейс" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="WB">Wildberries</SelectItem>
-                  <SelectItem value="OZON">OZON</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormLabel>Маркетплейсы *</FormLabel>
+              <FormControl>
+                <div className="flex flex-wrap gap-2">
+                  {marketplaceOptions.map((option) => {
+                    const isSelected = selectedMarketplaces.includes(option.value);
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => toggleMarketplace(option.value)}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -235,12 +285,6 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
               <Select
                 onValueChange={(value) => {
                   field.onChange(value);
-                  if (value) {
-                    loadTags(value);
-                  } else {
-                    setTags([]);
-                    form.setValue('tagIds', []);
-                  }
                 }}
                 value={field.value || ''}
               >
@@ -261,6 +305,40 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             </FormItem>
           )}
         />
+
+        {selectedCategoryId && tags.length > 0 && (
+          <FormField
+            control={form.control}
+            name="tagIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Теги (опционально)</FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => {
+                      const isSelected = selectedTagIds.includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          onClick={() => toggleTag(tag.id)}
+                          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border'
+                          }`}
+                        >
+                          {tag.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
@@ -309,7 +387,7 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             name="budgetType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Тип бюджета</FormLabel>
+                <FormLabel>Тип цены</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value || 'FIXED'}>
                   <FormControl>
                     <SelectTrigger>
@@ -331,50 +409,28 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             name="budget"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Бюджет (₽)</FormLabel>
+                <FormLabel>Цена</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={field.value ?? ''}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                  />
+                  <div className="flex items-center gap-2">
+                    {budgetType === 'NEGOTIABLE' && (
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">от</span>
+                    )}
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      className={budgetType === 'NEGOTIABLE' ? 'flex-1' : ''}
+                    />
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">₽</span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-
-        {selectedCategoryId && tags.length > 0 && (
-          <FormField
-            control={form.control}
-            name="tagIds"
-            render={() => (
-              <FormItem>
-                <FormLabel>Теги</FormLabel>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      className={`px-2.5 py-0.5 rounded text-sm cursor-pointer transition-colors ${
-                        selectedTags.includes(tag.id)
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                      }`}
-                      onClick={() => toggleTag(tag.id)}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         <div className="flex gap-4 justify-end">
           <Button

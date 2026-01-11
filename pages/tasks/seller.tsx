@@ -7,8 +7,8 @@ import AdBlock from '../../components/common/AdBlock';
 import Pagination from '../../components/common/Pagination';
 import { api } from '../../src/api/client';
 import { Task, Category } from '@prisma/client';
-import { Skeleton } from '../../components/ui/skeleton';
 import { Card, CardContent } from '../../components/ui/card';
+import TaskCardSkeleton from '../../components/task/TaskCardSkeleton';
 import { useDebounce } from '../../src/lib/utils';
 import styles from './seller.module.css';
 
@@ -45,7 +45,7 @@ export default function SellerTasksCatalog() {
     const queryFilters = {
       categoryId: router.query.categoryId as string,
       tagIds: router.query.tagIds ? (router.query.tagIds as string).split(',') : undefined,
-      marketplace: router.query.marketplace as 'WB' | 'OZON' | undefined,
+      marketplace: router.query.marketplace as 'WB' | 'OZON' | 'YANDEX_MARKET' | 'LAMODA' | undefined,
       status: router.query.status as 'OPEN' | 'CLOSED' | undefined,
       budgetMin: router.query.budgetMin ? parseInt(router.query.budgetMin as string) : undefined,
       budgetMax: router.query.budgetMax ? parseInt(router.query.budgetMax as string) : undefined,
@@ -90,7 +90,7 @@ export default function SellerTasksCatalog() {
       setTasks(data.tasks);
       setTotalPages(data.totalPages);
     } catch (error) {
-      console.error('Ошибка загрузки задач продавцов:', error);
+      console.error('Ошибка загрузки задач заказчиков:', error);
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ export default function SellerTasksCatalog() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Задачи продавцов</h1>
+        <h1 className={styles.title}>Задачи заказчиков</h1>
       </div>
 
       <div className={styles.searchSection}>
@@ -147,6 +147,10 @@ export default function SellerTasksCatalog() {
           />
           <TaskFiltersSidebar filters={filters} onFiltersChange={handleFiltersChange} />
         </div>
+        {/* Горизонтальный рекламный блок на мобильных */}
+        <div className={styles.mobileAdBlock}>
+          <AdBlock count={10} variant="horizontal" />
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -154,19 +158,13 @@ export default function SellerTasksCatalog() {
           {loading ? (
             <div className={styles.grid}>
               {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6 space-y-4">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </CardContent>
-                </Card>
+                <TaskCardSkeleton key={i} />
               ))}
             </div>
           ) : tasks.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">Задачи продавцов не найдены</p>
+                <p className="text-muted-foreground">Задачи заказчиков не найдены</p>
               </CardContent>
             </Card>
           ) : (

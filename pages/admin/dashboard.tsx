@@ -34,6 +34,7 @@ interface Task {
   description: string;
   budget: number | null;
   budgetType: string;
+  images?: string[];
   user: {
     id: string;
     username: string;
@@ -88,6 +89,8 @@ export default function AdminDashboard() {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const adImageInputRef = useRef<HTMLInputElement>(null);
+  const [taskHistory, setTaskHistory] = useState<Record<string, any[]>>({});
+  const [loadingHistory, setLoadingHistory] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -153,6 +156,76 @@ export default function AdminDashboard() {
     } catch (error: any) {
       toast.error(error.message || 'Ошибка удаления задачи');
     }
+  };
+
+  const loadTaskHistory = async (taskId: string) => {
+    if (taskHistory[taskId]) {
+      // История уже загружена, скрываем её
+      setTaskHistory(prev => {
+        const newState = { ...prev };
+        delete newState[taskId];
+        return newState;
+      });
+      return;
+    }
+
+    try {
+      setLoadingHistory(prev => ({ ...prev, [taskId]: true }));
+      const history = await api.get(`/api/admin/tasks/${taskId}/history`);
+      setTaskHistory(prev => ({ ...prev, [taskId]: history }));
+    } catch (error: any) {
+      console.error('Ошибка загрузки истории:', error);
+      toast.error('Ошибка загрузки истории изменений');
+    } finally {
+      setLoadingHistory(prev => ({ ...prev, [taskId]: false }));
+    }
+  };
+
+  const formatFieldValue = (field: string, value: any): string => {
+    if (value === null || value === undefined) {
+      return '(не указано)';
+    }
+
+    if (field === 'marketplace') {
+      if (Array.isArray(value)) {
+        const marketplaceLabels: Record<string, string> = {
+          WB: 'Wildberries',
+          OZON: 'OZON',
+          YANDEX_MARKET: 'ЯндексМаркет',
+          LAMODA: 'Lamoda',
+        };
+        return value.map(mp => marketplaceLabels[mp] || mp).join(', ') || '(не указано)';
+      }
+      return String(value);
+    }
+
+    if (field === 'tagIds') {
+      if (Array.isArray(value)) {
+        return value.length > 0 ? `${value.length} тег(ов)` : '(нет тегов)';
+      }
+      return String(value);
+    }
+
+    if (field === 'images') {
+      if (Array.isArray(value)) {
+        return value.length > 0 ? `${value.length} изображение(й)` : '(нет изображений)';
+      }
+      return String(value);
+    }
+
+    if (field === 'budget') {
+      return value ? `${value.toLocaleString('ru-RU')} ₽` : '(не указано)';
+    }
+
+    if (field === 'budgetType') {
+      return value === 'FIXED' ? 'Фиксированная' : value === 'NEGOTIABLE' ? 'Договорная' : String(value);
+    }
+
+    if (typeof value === 'string' && value.length > 100) {
+      return value.substring(0, 100) + '...';
+    }
+
+    return String(value);
   };
 
   const loadAds = async () => {
@@ -509,6 +582,28 @@ export default function AdminDashboard() {
                       </p>
                     </div>
 
+                    {/* Изображения задачи */}
+                    {task.images && task.images.length > 0 && (
+                      <div>
+                        <div className="text-sm font-medium mb-2">Фотографии ({task.images.length}):</div>
+                        <div className="flex flex-wrap gap-2">
+                          {task.images.map((imageUrl, index) => (
+                            <div 
+                              key={index} 
+                              className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                            >
+                              <img
+                                src={imageUrl}
+                                alt={`${task.title} - изображение ${index + 1}`}
+                                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => window.open(imageUrl, '_blank')}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Стоимость задачи */}
                     {task.budget && (
                       <div className="flex items-center gap-2">
@@ -554,6 +649,68 @@ export default function AdminDashboard() {
                         {new Date(task.createdAt).toLocaleDateString('ru-RU')}
                       </span>
                     </div>
+
+                    {/* История изменений */}
+                    {taskHistory[task.id] && taskHistory[task.id].length > 0 && (
+                      <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                        <h4 className="font-semibold text-sm mb-2">История изменений:</h4>
+                        <div className="space-y-3">
+                          {taskHistory[task.id].map((historyItem, idx) => (
+                            <div key={idx} className="text-xs space-y-1 border-l-2 border-yellow-400 pl-2">
+                              <div className="font-medium">
+                                Изменено: {new Date(historyItem.createdAt).toLocaleString('ru-RU')}
+                              </div>
+                              {historyItem.reason && (
+                                <div className="text-muted-foreground">
+                                  Причина: {historyItem.reason}
+                                </div>
+                              )}
+                              <div className="text-muted-foreground">
+                                Измененные поля: <span className="font-medium">{historyItem.changedFields.join(', ')}</span>
+                              </div>
+                              {Object.entries(historyItem.changes || {}).map(([field, change]: [string, any]) => (
+                                <div key={field} className="ml-2 space-y-1">
+                                  <div className="font-medium capitalize">{field}:</div>
+                                  <div className="flex flex-col gap-1">
+                                    <div className="line-through text-red-600 dark:text-red-400 text-xs">
+                                      Было: {formatFieldValue(field, change.old)}
+                                    </div>
+                                    <div className="text-green-600 dark:text-green-400 text-xs">
+                                      Стало: {formatFieldValue(field, change.new)}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Кнопка загрузки истории */}
+                    <Button
+                      onClick={() => loadTaskHistory(task.id)}
+                      size="sm"
+                      variant="outline"
+                      disabled={loadingHistory[task.id]}
+                    >
+                      {loadingHistory[task.id] ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Загрузка...
+                        </>
+                      ) : taskHistory[task.id] ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Скрыть историю изменений
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Показать историю изменений
+                        </>
+                      )}
+                    </Button>
 
                     {/* Поле для комментария при отправке на доработку */}
                     <div className="space-y-2">
