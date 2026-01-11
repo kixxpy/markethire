@@ -1,0 +1,570 @@
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* Табы навигации */
+.tabsContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+}
+
+.tabButton:hover {
+  color: hsl(var(--foreground));
+}
+
+.tabButtonActive {
+  border-bottom-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.tabIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Статистика */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Карточки задач */
+.taskCard {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.taskTitle {
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.taskMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.taskExpandButton {
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.taskContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskDescription {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.taskImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.taskImage {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  flex-shrink: 0;
+}
+
+.taskImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.taskImage img:hover {
+  opacity: 0.9;
+}
+
+.taskAuthor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.taskAuthorLabel {
+  font-weight: 500;
+}
+
+.taskAuthorInfo {
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.taskActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.taskActionButton {
+  flex: 1;
+  min-width: fit-content;
+}
+
+/* История изменений */
+.taskHistory {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+}
+
+.taskHistoryTitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.taskHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskHistoryItem {
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid hsl(var(--primary));
+}
+
+.taskHistoryField {
+  margin-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Форма комментария */
+.commentTextarea {
+  min-height: 5rem;
+  width: 100%;
+}
+
+/* Управление рекламой */
+.adsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.adsHeaderContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.adsHeaderButton {
+  flex-shrink: 0;
+}
+
+.adItem {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adItemContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.adItemImage {
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.adItemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.adItemField {
+  font-size: 0.875rem;
+}
+
+.adItemFieldLabel {
+  color: hsl(var(--muted-foreground));
+}
+
+.adItemActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Аналитика */
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.analyticsCard {
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+}
+
+.analyticsCardLabel {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.25rem;
+}
+
+.analyticsCardValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Диалог рекламы */
+.dialogContent {
+  max-width: 90vw;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dialogFormField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dialogFormLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.dialogFormInput {
+  width: 100%;
+}
+
+.dialogFormImagePreview {
+  width: 100%;
+  height: 16rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.dialogFormActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.dialogFormButton {
+  flex: 1;
+  min-width: fit-content;
+}
+
+/* Медиа-запросы для планшетов */
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 2.25rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .taskImage {
+    width: 8rem;
+    height: 8rem;
+  }
+
+  .adItem {
+    flex-direction: row;
+  }
+
+  .adItemImage {
+    width: 8rem;
+    height: 8rem;
+  }
+
+  .analyticsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dialogContent {
+    max-width: 32rem;
+  }
+
+  .dialogFormImagePreview {
+    height: 20rem;
+  }
+}
+
+/* Медиа-запросы для десктопов */
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem;
+    max-width: 1280px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .taskImage {
+    width: 10rem;
+    height: 10rem;
+  }
+
+  .taskHeader {
+    flex-wrap: nowrap;
+  }
+
+  .taskActions {
+    flex-wrap: nowrap;
+  }
+
+  .taskActionButton {
+    flex: 0 1 auto;
+  }
+
+  .adItemContent {
+    flex-wrap: nowrap;
+  }
+
+  .analyticsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dialogFormActions {
+    flex-wrap: nowrap;
+  }
+
+  .dialogFormButton {
+    flex: 0 1 auto;
+  }
+}
+
+/* Медиа-запросы для больших экранов */
+@media (min-width: 1280px) {
+  .analyticsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Улучшения для мобильных устройств */
+@media (max-width: 639px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tabsContainer {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .tabButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .tabIcon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .statsGrid {
+    gap: 0.75rem;
+  }
+
+  .taskCard {
+    padding: 0.75rem;
+  }
+
+  .taskTitle {
+    font-size: 1rem;
+  }
+
+  .taskHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .taskExpandButton {
+    align-self: flex-end;
+    margin-left: 0;
+  }
+
+  .taskActions {
+    flex-direction: column;
+  }
+
+  .taskActionButton {
+    width: 100%;
+  }
+
+  .taskImage {
+    width: 100%;
+    height: auto;
+    max-height: 12rem;
+  }
+
+  .adItemContent {
+    flex-direction: column;
+  }
+
+  .adItemImage {
+    width: 100%;
+    height: auto;
+    max-height: 12rem;
+  }
+
+  .adItemActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .adItemActions button {
+    flex: 1;
+  }
+
+  .adsHeader {
+    flex-direction: column;
+  }
+
+  .adsHeaderButton {
+    width: 100%;
+  }
+
+  .analyticsGrid {
+    gap: 0.75rem;
+  }
+
+  .analyticsCard {
+    padding: 0.75rem;
+  }
+
+  .analyticsCardValue {
+    font-size: 1.25rem;
+  }
+
+  .dialogContent {
+    margin: 1rem;
+    padding: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .dialogFormActions {
+    flex-direction: column;
+  }
+
+  .dialogFormButton {
+    width: 100%;
+  }
+
+  .dialogFormImagePreview {
+    height: 12rem;
+  }
+}

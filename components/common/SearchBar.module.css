@@ -1,5 +1,6 @@
 .searchBar {
   width: 100%;
+  max-width: 100%;
 }
 
 .searchWrapper {
@@ -7,6 +8,7 @@
   display: flex;
   align-items: center;
   width: 100%;
+  max-width: 100%;
 }
 
 .searchIcon {
@@ -17,12 +19,15 @@
   color: hsl(var(--muted-foreground));
   pointer-events: none;
   z-index: 1;
+  flex-shrink: 0;
 }
 
 .searchInput {
-  padding-left: 40px;
+  padding-left: 44px; /* Увеличено для предотвращения наложения на иконку */
   padding-right: 40px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .clearButton {
@@ -34,6 +39,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  min-width: 32px;
 }
 
 .clearIcon {
@@ -41,8 +48,82 @@
   height: 16px;
 }
 
+/* Планшеты и мобильные устройства */
 @media (max-width: 768px) {
   .searchInput {
     font-size: 16px; /* Предотвращает зум на iOS */
+    padding-left: 40px; /* Увеличено для предотвращения наложения на иконку */
+    padding-right: 36px;
+  }
+
+  .searchIcon {
+    left: 10px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .clearButton {
+    right: 2px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .clearIcon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Мобильные устройства */
+@media (max-width: 480px) {
+  .searchInput {
+    padding-left: 36px; /* Увеличено для предотвращения наложения на иконку */
+    padding-right: 32px;
+    font-size: 16px;
+  }
+
+  .searchIcon {
+    left: 8px;
+    width: 14px;
+    height: 14px;
+  }
+
+  .clearButton {
+    right: 2px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+  }
+
+  .clearIcon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+  .searchInput {
+    padding-left: 32px; /* Увеличено для предотвращения наложения на иконку */
+    padding-right: 28px;
+    font-size: 16px;
+  }
+
+  .searchIcon {
+    left: 6px;
+    width: 12px;
+    height: 12px;
+  }
+
+  .clearButton {
+    right: 1px;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+  }
+
+  .clearIcon {
+    width: 11px;
+    height: 11px;
   }
 }

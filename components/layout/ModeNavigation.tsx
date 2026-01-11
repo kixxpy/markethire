@@ -10,6 +10,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
+import styles from './ModeNavigation.module.css';
 
 export function ModeNavigation() {
   const { isAuthenticated, activeMode, user } = useAuthStore();
@@ -32,17 +33,17 @@ export function ModeNavigation() {
       { 
         href: '/seller/dashboard', 
         label: 'Панель управления', 
-        icon: <LayoutDashboard className="h-4 w-4" />
+        icon: <LayoutDashboard />
       },
       { 
         href: '/seller/tasks', 
         label: 'Мои задачи', 
-        icon: <ClipboardList className="h-4 w-4" />
+        icon: <ClipboardList />
       },
       { 
         href: '/tasks/create', 
         label: 'Создать задачу', 
-        icon: <Plus className="h-4 w-4" />
+        icon: <Plus />
       },
     ];
   };
@@ -53,22 +54,22 @@ export function ModeNavigation() {
       { 
         href: '/executor/dashboard', 
         label: 'Панель управления', 
-        icon: <LayoutDashboard className="h-4 w-4" />
+        icon: <LayoutDashboard />
       },
       { 
         href: '/executor/tasks', 
         label: 'Мои услуги', 
-        icon: <ClipboardList className="h-4 w-4" />
+        icon: <ClipboardList />
       },
       { 
         href: '/executor/responses', 
         label: 'Мои отклики', 
-        icon: <MessageSquare className="h-4 w-4" />
+        icon: <MessageSquare />
       },
       { 
         href: '/tasks/create', 
         label: 'Добавить услугу', 
-        icon: <Plus className="h-4 w-4" />
+        icon: <Plus />
       },
     ];
   };
@@ -77,25 +78,25 @@ export function ModeNavigation() {
   const performerNavLinks = activeMode === 'PERFORMER' ? getPerformerNavLinks() : [];
 
   return (
-    <div className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-2 sm:px-4">
+    <div className={cn(styles.navigation, "w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60")}>
+      <div className={cn(styles.container, "container mx-auto")}>
         {/* Блок навигации для SELLER режима */}
         {activeMode === 'SELLER' && sellerNavLinks.length > 0 && (
-          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-seller-accent/30 rounded-lg px-2 lg:px-3 py-2 my-2">
-            <ul className="flex items-center gap-1 lg:gap-2 flex-wrap">
+          <div className={cn(styles.navContainer, "bg-seller-accent/30")}>
+            <ul className={styles.navList}>
               {sellerNavLinks.map((link) => (
-                <li key={link.href + link.label} className="flex-shrink-0">
+                <li key={link.href + link.label} className={styles.navItem}>
                   <Link
                     href={link.href}
                     className={cn(
-                      "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                      styles.navLink,
                       isActive(link.href)
                         ? "bg-seller-primary text-seller-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-seller-accent hover:text-seller-primary"
                     )}
                   >
-                    <span className="flex-shrink-0">{link.icon}</span>
-                    <span className="truncate">{link.label}</span>
+                    <span className={styles.navLinkIcon}>{link.icon}</span>
+                    <span className={styles.navLinkText}>{link.label}</span>
                   </Link>
                 </li>
               ))}
@@ -105,21 +106,21 @@ export function ModeNavigation() {
 
         {/* Блок навигации для PERFORMER режима */}
         {activeMode === 'PERFORMER' && performerNavLinks.length > 0 && (
-          <div className="flex items-center justify-center gap-1 lg:gap-2 bg-executor-accent/30 rounded-lg px-2 lg:px-3 py-2 my-2">
-            <ul className="flex items-center gap-1 lg:gap-2 flex-wrap">
+          <div className={cn(styles.navContainer, "bg-executor-accent/30")}>
+            <ul className={styles.navList}>
               {performerNavLinks.map((link) => (
-                <li key={link.href + link.label} className="flex-shrink-0">
+                <li key={link.href + link.label} className={styles.navItem}>
                   <Link
                     href={link.href}
                     className={cn(
-                      "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                      styles.navLink,
                       isActive(link.href)
                         ? "bg-executor-primary text-executor-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-executor-accent hover:text-executor-primary"
                     )}
                   >
-                    <span className="flex-shrink-0">{link.icon}</span>
-                    <span className="truncate">{link.label}</span>
+                    <span className={styles.navLinkIcon}>{link.icon}</span>
+                    <span className={styles.navLinkText}>{link.label}</span>
                   </Link>
                 </li>
               ))}

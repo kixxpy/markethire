@@ -1,0 +1,334 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.iconWrapper {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--primary) / 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.headerIcon {
+  width: 2rem;
+  height: 2rem;
+  color: hsl(var(--primary));
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 1rem;
+}
+
+.text:last-child {
+  margin-bottom: 0;
+}
+
+.link {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.link:hover {
+  opacity: 0.8;
+}
+
+.contactsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.cardIconWrapper {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--primary) / 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.cardIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: hsl(var(--primary));
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contactLabel {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  font-weight: 500;
+}
+
+.contactLink {
+  font-size: 1rem;
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: opacity 0.2s;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.contactLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.contactText {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+  margin: 0 0 0.75rem 0;
+}
+
+.contactText strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.contactNote {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  margin: 0.5rem 0 0 0;
+}
+
+.socialLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: color 0.2s;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.socialLink:hover {
+  color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+.socialIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.faqItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.faqItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.faqQuestion {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.faqAnswer {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+/* Mobile (480px - 639px) */
+@media (min-width: 480px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 2.25rem;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+  }
+
+  .section {
+    margin-bottom: 2.5rem;
+  }
+}
+
+/* Tablet (640px - 767px) */
+@media (min-width: 640px) {
+  .container {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .contactsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sectionTitle {
+    font-size: 1.375rem;
+  }
+
+  .cardTitle {
+    font-size: 1.375rem;
+  }
+
+  .socialLinks {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* Desktop (768px - 1023px) */
+@media (min-width: 768px) {
+  .container {
+    padding: 2.5rem;
+  }
+
+  .header {
+    margin-bottom: 4rem;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .iconWrapper {
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 2rem;
+  }
+
+  .headerIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .contactsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .faqQuestion {
+    font-size: 1.25rem;
+  }
+
+  .faqAnswer {
+    font-size: 1rem;
+  }
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .container {
+    padding: 3rem;
+  }
+
+  .title {
+    font-size: 3rem;
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .text {
+    font-size: 1.0625rem;
+  }
+
+  .cardTitle {
+    font-size: 1.5rem;
+  }
+
+  .contactText {
+    font-size: 1.0625rem;
+  }
+
+  .faqQuestion {
+    font-size: 1.375rem;
+  }
+
+  .faqAnswer {
+    font-size: 1.0625rem;
+  }
+}

@@ -23,6 +23,9 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .mobileAdBlock {
@@ -34,12 +37,27 @@
 .searchWrapper > :first-child {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
 }
 
 /* Mobile */
 @media (max-width: 767px) {
   .searchWrapper {
     gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .searchWrapper > :first-child {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 479px) {
+  .searchWrapper {
+    gap: 6px;
   }
 }
 
@@ -89,6 +107,10 @@
   .sidebar {
     display: block;
   }
+
+  .grid {
+    width: 100%;
+  }
 }
 
 /* Desktop (1280px - 1439px) */
@@ -100,10 +122,14 @@
   .sidebar {
     display: block;
   }
+
+  .grid {
+    width: 100%;
+  }
 }
 
-/* Medium Desktop (1024px - 1279px) */
-@media (min-width: 1024px) and (max-width: 1279px) {
+/* Medium Desktop (1027px - 1279px) */
+@media (min-width: 1027px) and (max-width: 1279px) {
   .content {
     gap: 20px;
   }
@@ -116,10 +142,14 @@
     display: block;
     width: 240px;
   }
+
+  .grid {
+    width: 100%;
+  }
 }
 
-/* Tablet (768px - 1019px) */
-@media (min-width: 768px) and (max-width: 1019px) {
+/* Tablet (768px - 1026px) */
+@media (min-width: 768px) and (max-width: 1026px) {
   .container {
     padding: 0 16px;
   }
@@ -133,38 +163,23 @@
     gap: 20px;
   }
 
-  .mobileAdBlock {
-    display: block;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
   .mainContent {
     order: 1;
-  }
-}
-
-/* Tablet (1020px - 1023px) */
-@media (min-width: 1020px) and (max-width: 1023px) {
-  .content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .mobileAdBlock {
-    display: none;
-  }
-
-  .sidebar {
     width: 100%;
-    display: block;
-    order: 2;
+    max-width: 100%;
   }
 
-  .mainContent {
-    order: 1;
+  .grid {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .mobileAdBlock {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
   }
 }
 
@@ -191,9 +206,17 @@
     gap: 16px;
   }
 
+  .mainContent {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+  }
+
   .grid {
     gap: 12px;
     margin-bottom: 24px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .pagination {
@@ -207,10 +230,6 @@
   .sidebar {
     display: none;
   }
-
-  .mainContent {
-    order: 1;
-  }
 }
 
 /* Small Mobile (до 480px) */
@@ -223,9 +242,16 @@
     font-size: 20px;
   }
 
+  .mainContent {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .grid {
     gap: 12px;
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .pagination {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '../../src/store/authStore';
 import { cn } from '../../src/lib/utils';
+import styles from './TaskPagesSwitcher.module.css';
 
 export function TaskPagesSwitcher() {
   const router = useRouter();
@@ -31,15 +32,15 @@ export function TaskPagesSwitcher() {
   };
 
   return (
-    <div className="inline-flex rounded-md border bg-muted p-1 gap-1">
+    <div className={styles.switcher}>
       <Link
         href="/seller/tasks"
         onClick={handleSellerClick}
         className={cn(
-          'px-3 py-1.5 text-sm rounded-md transition-colors font-medium',
+          styles.switcherLink,
           isSellerPage || activeMode === 'SELLER'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:bg-background/70'
+            ? styles.switcherLinkActive
+            : styles.switcherLinkInactive
         )}
       >
         Как заказчик
@@ -48,10 +49,10 @@ export function TaskPagesSwitcher() {
         href="/executor/tasks"
         onClick={handlePerformerClick}
         className={cn(
-          'px-3 py-1.5 text-sm rounded-md transition-colors font-medium',
+          styles.switcherLink,
           isPerformerPage || activeMode === 'PERFORMER'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:bg-background/70'
+            ? styles.switcherLinkActive
+            : styles.switcherLinkInactive
         )}
       >
         Как исполнитель

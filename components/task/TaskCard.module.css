@@ -1,6 +1,8 @@
 .card {
   width: 100%;
+  max-width: 100%;
   height: auto;
+  box-sizing: border-box;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -12,9 +14,11 @@
 .link {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   text-decoration: none;
   color: inherit;
+  box-sizing: border-box;
 }
 
 .cardContent {
@@ -23,6 +27,8 @@
   gap: 16px;
   padding: 16px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .imageContainer {
@@ -156,7 +162,7 @@
   color: hsl(var(--muted-foreground));
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -257,8 +263,31 @@
   flex-shrink: 0;
 }
 
+/* Desktop (1027px+) */
+@media (min-width: 1027px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 /* Tablet (768px - 1023px) */
 @media (max-width: 1023px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .link {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cardContent {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .imageContainer {
     width: 200px;
     height: 150px;
@@ -293,9 +322,23 @@
 
 /* Mobile (480px - 767px) */
 @media (max-width: 767px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .link {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .cardContent {
     flex-direction: column;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
   }
 
   .imageContainer {
@@ -349,8 +392,21 @@
 
 /* Small Mobile (до 480px) */
 @media (max-width: 479px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .link {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .cardContent {
     padding: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .imageContainer {

@@ -27,6 +27,7 @@ import {
 } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
+import styles from './dashboard.module.css';
 
 interface Task {
   id: string;
@@ -433,93 +434,58 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className={styles.container}>
         <div className="text-center">Загрузка...</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Панель администратора</h1>
+    <div className={styles.container}>
+        <h1 className={styles.title}>Панель администратора</h1>
 
         {/* Табы */}
-        <div className="flex gap-2 mb-6 border-b overflow-x-auto">
+        <div className={styles.tabsContainer}>
           <button
             onClick={() => setActiveTab('moderation')}
-            className={cn(
-              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
-              activeTab === 'moderation'
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className={cn(styles.tabButton, activeTab === 'moderation' && styles.tabButtonActive)}
           >
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Модерация
-            </div>
+            <Clock className={styles.tabIcon} />
+            Модерация
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={cn(
-              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
-              activeTab === 'users'
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className={cn(styles.tabButton, activeTab === 'users' && styles.tabButtonActive)}
           >
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Пользователи
-            </div>
+            <Users className={styles.tabIcon} />
+            Пользователи
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={cn(
-              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
-              activeTab === 'categories'
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className={cn(styles.tabButton, activeTab === 'categories' && styles.tabButtonActive)}
           >
-            <div className="flex items-center gap-2">
-              <FolderTree className="h-4 w-4" />
-              Категории
-            </div>
+            <FolderTree className={styles.tabIcon} />
+            Категории
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={cn(
-              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
-              activeTab === 'analytics'
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className={cn(styles.tabButton, activeTab === 'analytics' && styles.tabButtonActive)}
           >
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Аналитика
-            </div>
+            <BarChart3 className={styles.tabIcon} />
+            Аналитика
           </button>
           <button
             onClick={() => setActiveTab('ads')}
-            className={cn(
-              "px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap",
-              activeTab === 'ads'
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className={cn(styles.tabButton, activeTab === 'ads' && styles.tabButtonActive)}
           >
-            <div className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              Реклама
-            </div>
+            <ImageIcon className={styles.tabIcon} />
+            Реклама
           </button>
         </div>
 
         {/* Статистика - показываем на всех табах */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className={styles.statsGrid}>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Пользователи</CardTitle>
@@ -584,13 +550,13 @@ export default function AdminDashboard() {
                   return (
                     <div
                       key={task.id}
-                      className="border rounded-lg p-4 space-y-3"
+                      className={styles.taskCard}
                     >
                       {/* Заголовок с кнопкой разворачивания */}
-                      <div className="flex items-center justify-between">
+                      <div className={styles.taskHeader}>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <h3 className={styles.taskTitle}>{task.title}</h3>
+                          <div className={styles.taskMeta}>
                             <Badge variant="outline">{task.category.name}</Badge>
                             <span>
                               {new Date(task.createdAt).toLocaleDateString('ru-RU')}
@@ -601,7 +567,7 @@ export default function AdminDashboard() {
                           onClick={() => toggleTaskExpanded(task.id)}
                           size="sm"
                           variant="ghost"
-                          className="ml-2"
+                          className={styles.taskExpandButton}
                         >
                           {isExpanded ? (
                             <>
@@ -642,10 +608,10 @@ export default function AdminDashboard() {
 
                       {/* Развернутое содержимое */}
                       {isExpanded && (
-                        <>
+                        <div className={styles.taskContent}>
                           {/* Описание задачи */}
                           <div>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            <p className={styles.taskDescription}>
                               {task.description}
                             </p>
                           </div>
@@ -654,11 +620,11 @@ export default function AdminDashboard() {
                           {task.images && task.images.length > 0 && (
                             <div>
                               <div className="text-sm font-medium mb-2">Фотографии ({task.images.length}):</div>
-                              <div className="flex flex-wrap gap-2">
+                              <div className={styles.taskImages}>
                                 {task.images.map((imageUrl, index) => (
                                   <div 
                                     key={index} 
-                                    className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                                    className={styles.taskImage}
                                   >
                                     <img
                                       src={imageUrl}
@@ -684,9 +650,9 @@ export default function AdminDashboard() {
                           )}
 
                           {/* Информация об авторе */}
-                          <div className="flex flex-col gap-1 text-sm">
-                            <div className="font-medium">Автор:</div>
-                            <div className="text-muted-foreground space-y-1">
+                          <div className={styles.taskAuthor}>
+                            <div className={styles.taskAuthorLabel}>Автор:</div>
+                            <div className={styles.taskAuthorInfo}>
                               {task.user.name && (
                                 <div>Имя: {task.user.name}</div>
                               )}
@@ -709,18 +675,18 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {/* История изменений - только в развернутом виде */}
                       {isExpanded && (
                         <>
                           {taskHistory[task.id] && taskHistory[task.id].length > 0 && (
-                            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                              <h4 className="font-semibold text-sm mb-2">История изменений:</h4>
-                              <div className="space-y-3">
+                            <div className={styles.taskHistory}>
+                              <h4 className={styles.taskHistoryTitle}>История изменений:</h4>
+                              <div className={styles.taskHistoryList}>
                                 {taskHistory[task.id].map((historyItem, idx) => (
-                                  <div key={idx} className="text-xs space-y-1 border-l-2 border-yellow-400 pl-2">
+                                  <div key={idx} className={styles.taskHistoryItem}>
                                     <div className="font-medium">
                                       Изменено: {new Date(historyItem.createdAt).toLocaleString('ru-RU')}
                                     </div>
@@ -733,7 +699,7 @@ export default function AdminDashboard() {
                                       Измененные поля: <span className="font-medium">{historyItem.changedFields.join(', ')}</span>
                                     </div>
                                     {Object.entries(historyItem.changes || {}).map(([field, change]: [string, any]) => (
-                                      <div key={field} className="ml-2 space-y-1">
+                                      <div key={field} className={styles.taskHistoryField}>
                                         <div className="font-medium capitalize">{field}:</div>
                                         <div className="flex flex-col gap-1">
                                           <div className="line-through text-red-600 dark:text-red-400 text-xs">
@@ -785,18 +751,18 @@ export default function AdminDashboard() {
                                 ...prev,
                                 [task.id]: e.target.value
                               }))}
-                              className="min-h-[80px]"
+                              className={styles.commentTextarea}
                             />
                           </div>
                         </>
                       )}
 
                     {/* Кнопки действий */}
-                    <div className="flex gap-2 flex-wrap">
+                    <div className={styles.taskActions}>
                       <Button
                         onClick={() => handleModerate(task.id, 'APPROVE')}
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700"
+                        className={cn(styles.taskActionButton, "bg-green-600 hover:bg-green-700")}
                       >
                         <CheckCircle2 className="h-4 w-4 mr-2" />
                         Одобрить
@@ -810,6 +776,7 @@ export default function AdminDashboard() {
                         }}
                         size="sm"
                         variant="destructive"
+                        className={styles.taskActionButton}
                       >
                         <XCircle className="h-4 w-4 mr-2" />
                         Отклонить
@@ -825,7 +792,7 @@ export default function AdminDashboard() {
                         }}
                         size="sm"
                         variant="outline"
-                        className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                        className={cn(styles.taskActionButton, "border-orange-500 text-orange-600 hover:bg-orange-50")}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Отдать на доработку
@@ -835,7 +802,7 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            className="bg-red-600 hover:bg-red-700"
+                            className={cn(styles.taskActionButton, "bg-red-600 hover:bg-red-700")}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Удалить
@@ -909,30 +876,30 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {stats && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Всего пользователей</div>
-                      <div className="text-2xl font-bold">{stats.users.total}</div>
+                  <div className={styles.analyticsGrid}>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Всего пользователей</div>
+                      <div className={styles.analyticsCardValue}>{stats.users.total}</div>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Всего задач</div>
-                      <div className="text-2xl font-bold">{stats.tasks.total}</div>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Всего задач</div>
+                      <div className={styles.analyticsCardValue}>{stats.tasks.total}</div>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Одобрено задач</div>
-                      <div className="text-2xl font-bold text-green-600">{stats.tasks.approved}</div>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Одобрено задач</div>
+                      <div className={cn(styles.analyticsCardValue, "text-green-600")}>{stats.tasks.approved}</div>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Отклонено задач</div>
-                      <div className="text-2xl font-bold text-red-600">{stats.tasks.rejected}</div>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Отклонено задач</div>
+                      <div className={cn(styles.analyticsCardValue, "text-red-600")}>{stats.tasks.rejected}</div>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Всего откликов</div>
-                      <div className="text-2xl font-bold">{stats.responses.total}</div>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Всего откликов</div>
+                      <div className={styles.analyticsCardValue}>{stats.responses.total}</div>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Категорий</div>
-                      <div className="text-2xl font-bold">{stats.categories.total}</div>
+                    <div className={styles.analyticsCard}>
+                      <div className={styles.analyticsCardLabel}>Категорий</div>
+                      <div className={styles.analyticsCardValue}>{stats.categories.total}</div>
                     </div>
                   </div>
                 )}
@@ -944,18 +911,21 @@ export default function AdminDashboard() {
         {activeTab === 'ads' && (
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
+              <div className={styles.adsHeader}>
+                <div className={styles.adsHeaderContent}>
                   <CardTitle>Управление рекламой</CardTitle>
                   <CardDescription>
                     Добавление и управление рекламными блоками на сайте
                   </CardDescription>
                 </div>
-                <Button onClick={() => {
-                  setEditingAd(null);
-                  setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
-                  setIsAdFormOpen(true);
-                }}>
+                <Button 
+                  onClick={() => {
+                    setEditingAd(null);
+                    setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
+                    setIsAdFormOpen(true);
+                  }}
+                  className={styles.adsHeaderButton}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Добавить рекламу
                 </Button>
@@ -969,30 +939,30 @@ export default function AdminDashboard() {
               ) : (
                 <div className="space-y-4">
                   {ads.map((ad) => (
-                    <div key={ad.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-start gap-4">
+                    <div key={ad.id} className={styles.adItem}>
+                      <div className={styles.adItemContent}>
                         <img 
                           src={ad.imageUrl} 
                           alt="Реклама"
-                          className="w-32 h-32 object-cover rounded"
+                          className={styles.adItemImage}
                         />
-                        <div className="flex-1 space-y-2">
-                          <div>
-                            <span className="text-sm text-muted-foreground">Ссылка: </span>
+                        <div className={styles.adItemInfo}>
+                          <div className={styles.adItemField}>
+                            <span className={styles.adItemFieldLabel}>Ссылка: </span>
                             <span className="text-sm">{ad.link || 'Не указана'}</span>
                           </div>
-                          <div>
-                            <span className="text-sm text-muted-foreground">Позиция: </span>
+                          <div className={styles.adItemField}>
+                            <span className={styles.adItemFieldLabel}>Позиция: </span>
                             <span className="text-sm">{ad.position}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Активна: </span>
+                          <div className={cn(styles.adItemField, "flex items-center gap-2")}>
+                            <span className={styles.adItemFieldLabel}>Активна: </span>
                             <Badge variant={ad.isActive ? 'default' : 'secondary'}>
                               {ad.isActive ? 'Да' : 'Нет'}
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className={styles.adItemActions}>
                           <Button
                             size="sm"
                             variant="outline"
@@ -1019,21 +989,21 @@ export default function AdminDashboard() {
 
         {isAdFormOpen && (
           <Dialog open={isAdFormOpen} onOpenChange={setIsAdFormOpen}>
-            <DialogContent>
+            <DialogContent className={styles.dialogContent}>
               <DialogHeader>
                 <DialogTitle>
                   {editingAd ? 'Редактировать рекламу' : 'Добавить рекламу'}
                 </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Изображение</label>
+              <div className={styles.dialogForm}>
+                <div className={styles.dialogFormField}>
+                  <label className={styles.dialogFormLabel}>Изображение</label>
                   {adFormData.imageUrl ? (
                     <div className="space-y-2">
                       <img 
                         src={adFormData.imageUrl} 
                         alt="Превью"
-                        className="w-full h-64 object-cover rounded"
+                        className={styles.dialogFormImagePreview}
                       />
                       <Button
                         type="button"
@@ -1067,8 +1037,8 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
+                <div className={styles.dialogFormField}>
+                  <label className={styles.dialogFormLabel}>
                     Ссылка <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -1077,29 +1047,31 @@ export default function AdminDashboard() {
                     value={adFormData.link}
                     onChange={(e) => setAdFormData(prev => ({ ...prev, link: e.target.value }))}
                     required
+                    className={styles.dialogFormInput}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Позиция</label>
+                <div className={styles.dialogFormField}>
+                  <label className={styles.dialogFormLabel}>Позиция</label>
                   <Input
                     type="number"
                     min="0"
                     value={adFormData.position}
                     onChange={(e) => setAdFormData(prev => ({ ...prev, position: parseInt(e.target.value) || 0 }))}
+                    className={styles.dialogFormInput}
                   />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className={cn(styles.dialogFormField, "flex items-center gap-2")}>
                   <input
                     type="checkbox"
                     id="ad-active"
                     checked={adFormData.isActive}
                     onChange={(e) => setAdFormData(prev => ({ ...prev, isActive: e.target.checked }))}
                   />
-                  <label htmlFor="ad-active" className="text-sm font-medium">
+                  <label htmlFor="ad-active" className={styles.dialogFormLabel}>
                     Активна
                   </label>
                 </div>
-                <div className="flex gap-2 justify-end">
+                <div className={styles.dialogFormActions}>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -1107,12 +1079,14 @@ export default function AdminDashboard() {
                       setEditingAd(null);
                       setAdFormData({ imageUrl: '', link: '', position: 0, isActive: true });
                     }}
+                    className={styles.dialogFormButton}
                   >
                     Отмена
                   </Button>
                   <Button
                     onClick={editingAd ? handleUpdateAd : handleCreateAd}
                     disabled={!adFormData.imageUrl || !adFormData.link || adFormData.link.trim() === ''}
+                    className={styles.dialogFormButton}
                   >
                     {editingAd ? 'Сохранить' : 'Создать'}
                   </Button>

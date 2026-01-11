@@ -1,0 +1,153 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(8px);
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .navbar {
+    background-color: hsl(var(--background) / 0.6);
+  }
+}
+
+.container {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+  max-width: 1280px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.logo {
+  flex-shrink: 0;
+}
+
+.navLinks {
+  display: none;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.logoutButton {
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.logoutButtonText {
+  display: none;
+}
+
+.mobileMenuButton {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Small Mobile (320px - 479px) */
+@media (max-width: 479px) {
+  .container {
+    padding: 0 4px;
+    gap: 4px;
+  }
+
+  .leftSection {
+    gap: 4px;
+  }
+
+  .rightSection {
+    gap: 2px;
+  }
+
+  .logoutButton {
+    padding: 0 6px;
+    min-width: auto;
+  }
+}
+
+/* Mobile (480px - 639px) */
+@media (min-width: 480px) and (max-width: 639px) {
+  .container {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .leftSection {
+    gap: 6px;
+  }
+
+  .rightSection {
+    gap: 4px;
+  }
+
+  .logoutButton {
+    padding: 0 8px;
+  }
+}
+
+/* Tablet (640px - 767px) */
+@media (min-width: 640px) {
+  .container {
+    height: 64px;
+    gap: 8px;
+    padding: 0 16px;
+  }
+
+  .leftSection {
+    gap: 12px;
+  }
+
+  .rightSection {
+    gap: 8px;
+  }
+
+  .logoutButtonText {
+    display: inline;
+  }
+
+  .mobileMenuButton {
+    display: none;
+  }
+}
+
+/* Desktop (768px+) */
+@media (min-width: 768px) {
+  .navLinks {
+    display: flex;
+  }
+
+  .rightSection {
+    gap: 12px;
+  }
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .leftSection {
+    gap: 24px;
+  }
+
+  .rightSection {
+    gap: 16px;
+  }
+}

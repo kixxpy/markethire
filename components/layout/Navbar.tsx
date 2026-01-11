@@ -21,6 +21,7 @@ import { NotificationCenter } from '../notifications/NotificationCenter';
 import { Logo } from './Logo';
 import { AuthModal } from '../auth/AuthModal';
 import { ThemeToggle } from './ThemeToggle';
+import styles from './Navbar.module.css';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -92,10 +93,10 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 sm:h-16 items-center justify-between gap-2 px-2 sm:px-4">
-        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-          <Logo size="md" className="flex-shrink-0" />
+    <nav className={cn(styles.navbar, "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60")}>
+      <div className={cn(styles.container, "flex items-center justify-between")}>
+        <div className={cn(styles.leftSection, "flex items-center min-w-0")}>
+          <Logo size="md" className={cn(styles.logo, "flex-shrink-0")} />
           
           {/* Ссылки для шапки профиля - перенесены рядом с логотипом */}
           {profileHeaderLinks.length > 0 && (
@@ -120,7 +121,7 @@ export function Navbar() {
           
           {/* Desktop / Tablet Navigation для остальных ссылок */}
           {navLinks.length > 0 && (
-            <ul className="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full">
+            <ul className={cn(styles.navLinks, "hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full")}>
               {navLinks.map((link) => (
                 <li key={link.href + link.label} className="flex-shrink-0">
                   <Link
@@ -141,7 +142,7 @@ export function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className={cn(styles.rightSection, "flex items-center")}>
           {isAuthenticated ? (
             <>
               <ThemeToggle />
@@ -162,19 +163,30 @@ export function Navbar() {
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="gap-2"
+                className={cn(styles.logoutButton, "gap-2")}
               >
-                <LogOut className="h-4 w-4" />
-                Выйти
+                <LogOut className="h-4 w-4 flex-shrink-0" />
+                <span className={cn(styles.logoutButtonText, "hidden sm:inline")}>
+                  Выйти
+                </span>
               </Button>
             </>
           ) : (
             <div className="flex items-center gap-1 sm:gap-2">
               <ThemeToggle />
-              <Button variant="ghost" size="sm" onClick={openLoginModal}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={openLoginModal}
+                className="hidden min-[480px]:inline-flex"
+              >
                 Войти
               </Button>
-              <Button size="sm" onClick={openRegisterModal}>
+              <Button 
+                size="sm" 
+                onClick={openRegisterModal}
+                className="hidden min-[480px]:inline-flex"
+              >
                 Регистрация
               </Button>
             </div>
@@ -182,7 +194,7 @@ export function Navbar() {
 
           {/* Mobile Menu */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild className="md:hidden">
+            <SheetTrigger asChild className={cn(styles.mobileMenuButton, "md:hidden")}>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Меню</span>

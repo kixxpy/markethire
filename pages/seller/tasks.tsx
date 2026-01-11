@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { Task, Category } from '@prisma/client';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
+import { cn } from '../../src/lib/utils';
+import styles from './tasks.module.css';
 
 interface TaskWithRelations extends Task {
   category: Category;
@@ -71,13 +73,13 @@ export default function SellerTasksPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Мои задачи</h1>
+    <div className={cn(styles.pageContainer, "space-y-6")}>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Мои задачи</h1>
           <TaskPagesSwitcher />
         </div>
-        <Button asChild>
+        <Button asChild className={styles.createButton}>
           <Link href="/tasks/create">Создать задачу</Link>
         </Button>
       </div>
@@ -90,11 +92,13 @@ export default function SellerTasksPage() {
         </div>
       ) : tasks.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">Здесь будут ваши задачи</p>
-            <Button asChild>
-              <Link href="/tasks/create">Создать первую задачу</Link>
-            </Button>
+          <CardContent className={cn(styles.emptyState, "text-center space-y-4")}>
+            <div className={styles.emptyStateContent}>
+              <p className="text-muted-foreground">Здесь будут ваши задачи</p>
+              <Button asChild>
+                <Link href="/tasks/create">Создать первую задачу</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (

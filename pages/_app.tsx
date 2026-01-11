@@ -42,7 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
   // Редирект на главную при перезагрузке, если пользователь не авторизован
   useEffect(() => {
     // Публичные страницы, на которых можно находиться без авторизации
-    const publicPaths = ['/', '/login', '/register', '/tasks', '/performers', '/vacancies'];
+    const publicPaths = ['/', '/login', '/register', '/tasks', '/performers', '/vacancies', '/about', '/privacy', '/contacts'];
     const isPublicPath = publicPaths.some(path => {
       if (path === '/') {
         return router.pathname === '/';
