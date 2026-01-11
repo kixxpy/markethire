@@ -513,8 +513,9 @@ export default function AdminDashboard() {
                     {task.budget && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          Стоимость: {task.budget.toLocaleString('ru-RU')} ₽
-                          {task.budgetType === 'NEGOTIABLE' && ' (договорная)'}
+                          Цена: {task.budgetType === 'NEGOTIABLE' 
+                            ? `от ${task.budget.toLocaleString('ru-RU')} ₽`
+                            : `${task.budget.toLocaleString('ru-RU')} ₽`}
                         </span>
                       </div>
                     )}

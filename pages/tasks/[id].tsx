@@ -32,6 +32,7 @@ interface TaskWithRelations extends Task {
   moderationStatus?: TaskModerationStatus;
   moderationComment?: string | null;
   images?: string[];
+  marketplace: Marketplace[]; // Изменено на массив
   user: {
     id: string;
     username: string | null;
@@ -61,6 +62,8 @@ interface TaskWithRelations extends Task {
 const marketplaceLabels: Record<Marketplace, string> = {
   WB: 'Wildberries',
   OZON: 'OZON',
+  YANDEX_MARKET: 'ЯндексМаркет',
+  LAMODA: 'Lamoda',
 };
 
 const statusLabels: Record<TaskStatus, string> = {
@@ -186,7 +189,9 @@ export default function TaskDetailPage() {
                 <CardTitle className="text-2xl">{task.title}</CardTitle>
               </div>
               <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                <span>{marketplaceLabels[task.marketplace]}</span>
+                {task.marketplace.map((mp) => (
+                  <span key={mp}>{marketplaceLabels[mp]}</span>
+                ))}
                 <span>{task.category.name}</span>
                 {task.tags.map((taskTag, idx) => (
                   <span key={taskTag.id || idx}>
@@ -323,10 +328,11 @@ export default function TaskDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {task.budget && (
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Бюджет:</span>
+                <span className="text-sm font-medium text-muted-foreground">Цена:</span>
                 <p className="text-lg font-semibold">
-                  {task.budget.toLocaleString('ru-RU')} ₽
-                  {task.budgetType === 'NEGOTIABLE' && ' (договорная)'}
+                  {task.budgetType === 'NEGOTIABLE' 
+                    ? `от ${task.budget.toLocaleString('ru-RU')} ₽`
+                    : `${task.budget.toLocaleString('ru-RU')} ₽`}
                 </p>
               </div>
             )}
