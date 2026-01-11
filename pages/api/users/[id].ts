@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getUserProfileById } from "../../../src/services/user.service";
+import { getUserProfileById, getUserTags } from "../../../src/services/user.service";
 import { withAuth } from "../../../src/middleware";
 import { AuthenticatedRequest } from "../../../src/middleware";
 
@@ -15,9 +15,15 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       return res.status(400).json({ error: "Неверный ID пользователя" });
     }
 
-    const profile = await getUserProfileById(id);
+    const [profile, tags] = await Promise.all([
+      getUserProfileById(id),
+      getUserTags(id).catch(() => []), // Если ошибка, возвращаем пустой массив
+    ]);
 
-    return res.status(200).json(profile);
+    return res.status(200).json({
+      ...profile,
+      tags: tags.map(tag => ({ tag })),
+    });
   } catch (error: any) {
     if (error.message === "Пользователь не найден") {
       return res.status(404).json({ error: error.message });
@@ -28,4 +34,4 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   }
 }
 
-export default withAuth(handler, { optional: true });
+export default withAuth(handler);
