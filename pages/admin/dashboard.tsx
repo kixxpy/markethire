@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Textarea } from '../../components/ui/textarea';
-import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2, BarChart3, FolderTree, Image as ImageIcon, Plus, Edit, Upload } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Users, FileText, RefreshCw, Trash2, BarChart3, FolderTree, Image as ImageIcon, Plus, Edit, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
 import {
   AlertDialog,
@@ -91,6 +91,7 @@ export default function AdminDashboard() {
   const adImageInputRef = useRef<HTMLInputElement>(null);
   const [taskHistory, setTaskHistory] = useState<Record<string, any[]>>({});
   const [loadingHistory, setLoadingHistory] = useState<Record<string, boolean>>({});
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -156,6 +157,18 @@ export default function AdminDashboard() {
     } catch (error: any) {
       toast.error(error.message || 'Ошибка удаления задачи');
     }
+  };
+
+  const toggleTaskExpanded = (taskId: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
   };
 
   const loadTaskHistory = async (taskId: string) => {
@@ -565,165 +578,218 @@ export default function AdminDashboard() {
               </p>
             ) : (
               <div className="space-y-4">
-                {pendingTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="border rounded-lg p-4 space-y-3"
-                  >
-                    {/* Название задачи */}
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
-                    </div>
-
-                    {/* Описание задачи */}
-                    <div>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {task.description}
-                      </p>
-                    </div>
-
-                    {/* Изображения задачи */}
-                    {task.images && task.images.length > 0 && (
-                      <div>
-                        <div className="text-sm font-medium mb-2">Фотографии ({task.images.length}):</div>
-                        <div className="flex flex-wrap gap-2">
-                          {task.images.map((imageUrl, index) => (
-                            <div 
-                              key={index} 
-                              className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
-                            >
-                              <img
-                                src={imageUrl}
-                                alt={`${task.title} - изображение ${index + 1}`}
-                                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => window.open(imageUrl, '_blank')}
-                              />
-                            </div>
-                          ))}
+                {pendingTasks.map((task) => {
+                  const isExpanded = expandedTasks.has(task.id);
+                  
+                  return (
+                    <div
+                      key={task.id}
+                      className="border rounded-lg p-4 space-y-3"
+                    >
+                      {/* Заголовок с кнопкой разворачивания */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Badge variant="outline">{task.category.name}</Badge>
+                            <span>
+                              {new Date(task.createdAt).toLocaleDateString('ru-RU')}
+                            </span>
+                          </div>
                         </div>
+                        <Button
+                          onClick={() => toggleTaskExpanded(task.id)}
+                          size="sm"
+                          variant="ghost"
+                          className="ml-2"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              Свернуть
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              Развернуть
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    )}
 
-                    {/* Стоимость задачи */}
-                    {task.budget && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          Цена: {task.budgetType === 'NEGOTIABLE' 
-                            ? `от ${task.budget.toLocaleString('ru-RU')} ₽`
-                            : `${task.budget.toLocaleString('ru-RU')} ₽`}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Информация об авторе */}
-                    <div className="flex flex-col gap-1 text-sm">
-                      <div className="font-medium">Автор:</div>
-                      <div className="text-muted-foreground space-y-1">
-                        {task.user.name && (
-                          <div>Имя: {task.user.name}</div>
-                        )}
-                        {task.user.username && (
-                          <div>Никнейм: {task.user.username}</div>
-                        )}
-                        {(task.user.telegram || task.user.whatsapp || task.user.emailContact) && (
-                          <div className="mt-1">
-                            <div className="font-medium mb-1">Контакты:</div>
-                            {task.user.telegram && (
-                              <div>Telegram: {task.user.telegram}</div>
+                      {/* Свернутое содержимое - только краткая информация */}
+                      {!isExpanded && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            {task.budget && (
+                              <span className="font-medium">
+                                Цена: {task.budgetType === 'NEGOTIABLE' 
+                                  ? `от ${task.budget.toLocaleString('ru-RU')} ₽`
+                                  : `${task.budget.toLocaleString('ru-RU')} ₽`}
+                              </span>
                             )}
-                            {task.user.whatsapp && (
-                              <div>WhatsApp: {task.user.whatsapp}</div>
-                            )}
-                            {task.user.emailContact && (
-                              <div>Email: {task.user.emailContact}</div>
+                            {task.images && task.images.length > 0 && (
+                              <span className="text-muted-foreground">
+                                Фото: {task.images.length}
+                              </span>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </div>
+                          <div className="text-sm text-muted-foreground">
+                            Автор: {task.user.name || task.user.username || task.user.email}
+                          </div>
+                        </div>
+                      )}
 
-                    {/* Категория и дата */}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge variant="outline">{task.category.name}</Badge>
-                      <span>
-                        {new Date(task.createdAt).toLocaleDateString('ru-RU')}
-                      </span>
-                    </div>
+                      {/* Развернутое содержимое */}
+                      {isExpanded && (
+                        <>
+                          {/* Описание задачи */}
+                          <div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {task.description}
+                            </p>
+                          </div>
 
-                    {/* История изменений */}
-                    {taskHistory[task.id] && taskHistory[task.id].length > 0 && (
-                      <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                        <h4 className="font-semibold text-sm mb-2">История изменений:</h4>
-                        <div className="space-y-3">
-                          {taskHistory[task.id].map((historyItem, idx) => (
-                            <div key={idx} className="text-xs space-y-1 border-l-2 border-yellow-400 pl-2">
-                              <div className="font-medium">
-                                Изменено: {new Date(historyItem.createdAt).toLocaleString('ru-RU')}
+                          {/* Изображения задачи */}
+                          {task.images && task.images.length > 0 && (
+                            <div>
+                              <div className="text-sm font-medium mb-2">Фотографии ({task.images.length}):</div>
+                              <div className="flex flex-wrap gap-2">
+                                {task.images.map((imageUrl, index) => (
+                                  <div 
+                                    key={index} 
+                                    className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                                  >
+                                    <img
+                                      src={imageUrl}
+                                      alt={`${task.title} - изображение ${index + 1}`}
+                                      className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => window.open(imageUrl, '_blank')}
+                                    />
+                                  </div>
+                                ))}
                               </div>
-                              {historyItem.reason && (
-                                <div className="text-muted-foreground">
-                                  Причина: {historyItem.reason}
+                            </div>
+                          )}
+
+                          {/* Стоимость задачи */}
+                          {task.budget && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                Цена: {task.budgetType === 'NEGOTIABLE' 
+                                  ? `от ${task.budget.toLocaleString('ru-RU')} ₽`
+                                  : `${task.budget.toLocaleString('ru-RU')} ₽`}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Информация об авторе */}
+                          <div className="flex flex-col gap-1 text-sm">
+                            <div className="font-medium">Автор:</div>
+                            <div className="text-muted-foreground space-y-1">
+                              {task.user.name && (
+                                <div>Имя: {task.user.name}</div>
+                              )}
+                              {task.user.username && (
+                                <div>Никнейм: {task.user.username}</div>
+                              )}
+                              {(task.user.telegram || task.user.whatsapp || task.user.emailContact) && (
+                                <div className="mt-1">
+                                  <div className="font-medium mb-1">Контакты:</div>
+                                  {task.user.telegram && (
+                                    <div>Telegram: {task.user.telegram}</div>
+                                  )}
+                                  {task.user.whatsapp && (
+                                    <div>WhatsApp: {task.user.whatsapp}</div>
+                                  )}
+                                  {task.user.emailContact && (
+                                    <div>Email: {task.user.emailContact}</div>
+                                  )}
                                 </div>
                               )}
-                              <div className="text-muted-foreground">
-                                Измененные поля: <span className="font-medium">{historyItem.changedFields.join(', ')}</span>
-                              </div>
-                              {Object.entries(historyItem.changes || {}).map(([field, change]: [string, any]) => (
-                                <div key={field} className="ml-2 space-y-1">
-                                  <div className="font-medium capitalize">{field}:</div>
-                                  <div className="flex flex-col gap-1">
-                                    <div className="line-through text-red-600 dark:text-red-400 text-xs">
-                                      Было: {formatFieldValue(field, change.old)}
-                                    </div>
-                                    <div className="text-green-600 dark:text-green-400 text-xs">
-                                      Стало: {formatFieldValue(field, change.new)}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Кнопка загрузки истории */}
-                    <Button
-                      onClick={() => loadTaskHistory(task.id)}
-                      size="sm"
-                      variant="outline"
-                      disabled={loadingHistory[task.id]}
-                    >
-                      {loadingHistory[task.id] ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Загрузка...
-                        </>
-                      ) : taskHistory[task.id] ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Скрыть историю изменений
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Показать историю изменений
+                          </div>
                         </>
                       )}
-                    </Button>
 
-                    {/* Поле для комментария при отправке на доработку */}
-                    <div className="space-y-2">
-                      <Textarea
-                        placeholder="Введите комментарий для доработки (обязательно при отправке на доработку)"
-                        value={revisionComments[task.id] || ''}
-                        onChange={(e) => setRevisionComments(prev => ({
-                          ...prev,
-                          [task.id]: e.target.value
-                        }))}
-                        className="min-h-[80px]"
-                      />
-                    </div>
+                      {/* История изменений - только в развернутом виде */}
+                      {isExpanded && (
+                        <>
+                          {taskHistory[task.id] && taskHistory[task.id].length > 0 && (
+                            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                              <h4 className="font-semibold text-sm mb-2">История изменений:</h4>
+                              <div className="space-y-3">
+                                {taskHistory[task.id].map((historyItem, idx) => (
+                                  <div key={idx} className="text-xs space-y-1 border-l-2 border-yellow-400 pl-2">
+                                    <div className="font-medium">
+                                      Изменено: {new Date(historyItem.createdAt).toLocaleString('ru-RU')}
+                                    </div>
+                                    {historyItem.reason && (
+                                      <div className="text-muted-foreground">
+                                        Причина: {historyItem.reason}
+                                      </div>
+                                    )}
+                                    <div className="text-muted-foreground">
+                                      Измененные поля: <span className="font-medium">{historyItem.changedFields.join(', ')}</span>
+                                    </div>
+                                    {Object.entries(historyItem.changes || {}).map(([field, change]: [string, any]) => (
+                                      <div key={field} className="ml-2 space-y-1">
+                                        <div className="font-medium capitalize">{field}:</div>
+                                        <div className="flex flex-col gap-1">
+                                          <div className="line-through text-red-600 dark:text-red-400 text-xs">
+                                            Было: {formatFieldValue(field, change.old)}
+                                          </div>
+                                          <div className="text-green-600 dark:text-green-400 text-xs">
+                                            Стало: {formatFieldValue(field, change.new)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Кнопка загрузки истории */}
+                          <Button
+                            onClick={() => loadTaskHistory(task.id)}
+                            size="sm"
+                            variant="outline"
+                            disabled={loadingHistory[task.id]}
+                          >
+                            {loadingHistory[task.id] ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                Загрузка...
+                              </>
+                            ) : taskHistory[task.id] ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Скрыть историю изменений
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Показать историю изменений
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Поле для комментария при отправке на доработку */}
+                          <div className="space-y-2">
+                            <Textarea
+                              placeholder="Введите комментарий для доработки (обязательно при отправке на доработку)"
+                              value={revisionComments[task.id] || ''}
+                              onChange={(e) => setRevisionComments(prev => ({
+                                ...prev,
+                                [task.id]: e.target.value
+                              }))}
+                              className="min-h-[80px]"
+                            />
+                          </div>
+                        </>
+                      )}
 
                     {/* Кнопки действий */}
                     <div className="flex gap-2 flex-wrap">
@@ -792,7 +858,8 @@ export default function AdminDashboard() {
                       </AlertDialog>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

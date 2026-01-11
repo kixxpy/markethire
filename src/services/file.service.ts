@@ -199,3 +199,23 @@ export function deleteTaskImages(imageUrls: string[]): void {
     }
   });
 }
+
+/**
+ * Удаление изображения рекламного блока
+ */
+export function deleteAdImage(imageUrl: string): void {
+  if (imageUrl && imageUrl.startsWith("/uploads/ads/")) {
+    const imagePath = path.join(process.cwd(), "public", imageUrl);
+    deleteFile(imagePath);
+  }
+}
+
+/**
+ * Удаление аватара пользователя
+ */
+export function deleteAvatar(avatarUrl: string | null): void {
+  if (avatarUrl && avatarUrl.startsWith("/uploads/avatars/")) {
+    const avatarPath = path.join(process.cwd(), "public", avatarUrl);
+    deleteFile(avatarPath);
+  }
+}

@@ -35,7 +35,7 @@ export default function EditTaskPage() {
         description: data.description,
         budget: data.budget,
         budgetType: data.budgetType,
-        tagIds: data.tags?.map((t: any) => t.tag.id) || [],
+        tagIds: data.tags?.map((t: any) => t.tag?.id || t.id).filter((id: any) => id != null) || [],
         images: data.images || [],
       });
     } catch (error) {

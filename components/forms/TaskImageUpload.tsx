@@ -23,11 +23,14 @@ export default function TaskImageUpload({
 }: TaskImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>(images);
+  const [removedImages, setRemovedImages] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Синхронизация previewImages с images
   useEffect(() => {
     setPreviewImages(images);
+    // Сбрасываем список удаленных изображений при изменении images извне
+    setRemovedImages(new Set());
   }, [images]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,12 +108,25 @@ export default function TaskImageUpload({
       });
 
       const data = await api.post<{ images: string[] }>(`/api/tasks/${taskId}/images`, formData);
-      const updated = [...previewImages, ...data.images.slice(previewImages.length)];
-      setPreviewImages(updated);
-      onImagesChange(updated);
-      toast.success(`Загружено ${data.images.length - previewImages.length} изображений`);
+      // Фильтруем изображения, исключая те, которые были удалены локально
+      // Это предотвращает возврат удаленных изображений при загрузке новых
+      const filteredImages = data.images.filter(img => !removedImages.has(img));
+      
+      // Правильно вычисляем количество загруженных изображений
+      // Это количество новых файлов, которые были загружены
+      const uploadedCount = files.length;
+      
+      setPreviewImages(filteredImages);
+      onImagesChange(filteredImages);
+      toast.success(`Загружено ${uploadedCount} изображений`);
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка загрузки изображений');
+      const errorMessage = error.message || 'Ошибка загрузки изображений';
+      // Если ошибка связана с превышением лимита изображений, показываем более понятное сообщение
+      if (errorMessage.includes('Максимум 3 изображения') || errorMessage.includes('максимум')) {
+        toast.error('Максимум 3 изображения на задачу. Удалите существующие изображения, чтобы добавить новые.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setUploading(false);
     }
@@ -121,19 +137,25 @@ export default function TaskImageUpload({
 
     const imageUrl = previewImages[index];
     
-    // Если задача создана и изображение загружено на сервер, удаляем его
+    // При редактировании существующей задачи НЕ удаляем сразу из БД
+    // Удаляем только из локального состояния
+    // Реальное удаление произойдет при сохранении формы через updateTask
+    // Это предотвращает проблему, когда изображение удаляется из БД,
+    // но при сохранении формы администратор видит старое состояние
     if (taskId && imageUrl.startsWith('/uploads/tasks/')) {
-      try {
-        await api.delete(`/api/tasks/${taskId}/images/${index}`);
-      } catch (error) {
-        toast.error('Ошибка удаления изображения');
-        return;
-      }
+      // Добавляем изображение в список удаленных, чтобы оно не вернулось при загрузке новых
+      setRemovedImages(prev => new Set(prev).add(imageUrl));
+      // Удаляем из локального состояния
+      const updated = previewImages.filter((_, i) => i !== index);
+      setPreviewImages(updated);
+      onImagesChange(updated);
+      toast.success('Изображение будет удалено при сохранении изменений');
+    } else {
+      // Для локальных превью или задач без taskId просто удаляем из состояния
+      const updated = previewImages.filter((_, i) => i !== index);
+      setPreviewImages(updated);
+      onImagesChange(updated);
     }
-
-    const updated = previewImages.filter((_, i) => i !== index);
-    setPreviewImages(updated);
-    onImagesChange(updated);
   };
 
   const canAddMore = previewImages.length < maxImages;
@@ -146,7 +168,7 @@ export default function TaskImageUpload({
         {/* Существующие изображения */}
         {previewImages.map((imageUrl, index) => (
           <div
-            key={index}
+            key={`${imageUrl}-${index}`}
             className="relative aspect-square rounded-lg overflow-hidden border border-input bg-muted group"
           >
             <Image

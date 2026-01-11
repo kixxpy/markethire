@@ -77,6 +77,31 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   res.setHeader("Content-Type", "application/json");
 
   try {
+    if (req.method === "DELETE") {
+      // Удаление аватара
+      if (!req.user?.userId) {
+        return res.status(401).json({ error: "Необходима авторизация" });
+      }
+
+      const userId = req.user.userId;
+      
+      // Получаем текущий аватар
+      const oldAvatarUrl = await getUserAvatarUrl(userId);
+      
+      // Удаляем файл
+      if (oldAvatarUrl) {
+        await deleteOldAvatar(userId);
+      }
+      
+      // Обновляем профиль, устанавливая avatarUrl в null
+      const updatedProfile = await updateUserProfile(userId, { avatarUrl: null });
+
+      return res.status(200).json({
+        message: "Аватар успешно удален",
+        user: updatedProfile,
+      });
+    }
+
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Метод не разрешен" });
     }

@@ -18,6 +18,7 @@ const inter = Inter({
 export default function App({ Component, pageProps }: AppProps) {
   const init = useAuthStore((state) => state.init);
   const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const activeMode = useAuthStore((state) => state.activeMode);
 
@@ -29,9 +30,7 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const handleLogout = () => {
       logout();
-      if (router.pathname !== '/login' && router.pathname !== '/register') {
-        router.push('/login');
-      }
+      router.push('/');
     };
 
     window.addEventListener('auth:logout', handleLogout);
@@ -39,6 +38,23 @@ export default function App({ Component, pageProps }: AppProps) {
       window.removeEventListener('auth:logout', handleLogout);
     };
   }, [logout, router]);
+
+  // Редирект на главную при перезагрузке, если пользователь не авторизован
+  useEffect(() => {
+    // Публичные страницы, на которых можно находиться без авторизации
+    const publicPaths = ['/', '/login', '/register', '/tasks', '/performers', '/vacancies'];
+    const isPublicPath = publicPaths.some(path => {
+      if (path === '/') {
+        return router.pathname === '/';
+      }
+      return router.pathname.startsWith(path);
+    });
+
+    // Если пользователь не авторизован и находится не на публичной странице, редиректим на главную
+    if (!isAuthenticated && !isPublicPath && router.isReady) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     document.documentElement.classList.add(inter.variable);
@@ -73,7 +89,10 @@ export default function App({ Component, pageProps }: AppProps) {
     >
       <Layout>
         <Component {...pageProps} />
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right" 
+          closeButton={true}
+        />
       </Layout>
     </ThemeProvider>
   );

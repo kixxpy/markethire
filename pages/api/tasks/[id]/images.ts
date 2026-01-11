@@ -157,7 +157,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
     // Если хотя бы одно изображение загружено, обновляем задачу
     if (savedImages.length > 0) {
-      const updatedImages = [...currentImages, ...savedImages];
+      // Объединяем существующие и новые изображения, исключая дубликаты
+      const updatedImages = [...currentImages];
+      for (const newImage of savedImages) {
+        if (!updatedImages.includes(newImage)) {
+          updatedImages.push(newImage);
+        }
+      }
       
       await prisma.task.update({
         where: { id },

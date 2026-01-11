@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { deleteAdImage } from './file.service';
 
 export interface CreateAdInput {
   imageUrl: string;
@@ -90,6 +91,20 @@ export async function createAd(data: CreateAdInput): Promise<Ad> {
  * Обновить рекламный блок
  */
 export async function updateAd(id: string, data: UpdateAdInput): Promise<Ad> {
+  // Получаем текущий рекламный блок для удаления старого изображения
+  const currentAd = await prisma.ad.findUnique({
+    where: { id },
+    select: { imageUrl: true },
+  });
+
+  // Если обновляется imageUrl и он отличается от текущего, удаляем старое изображение
+  if (data.imageUrl !== undefined && currentAd && currentAd.imageUrl !== data.imageUrl) {
+    // Удаляем старое изображение только если новое отличается
+    if (currentAd.imageUrl && currentAd.imageUrl.startsWith('/uploads/ads/')) {
+      deleteAdImage(currentAd.imageUrl);
+    }
+  }
+
   return prisma.ad.update({
     where: { id },
     data,
@@ -100,6 +115,18 @@ export async function updateAd(id: string, data: UpdateAdInput): Promise<Ad> {
  * Удалить рекламный блок
  */
 export async function deleteAd(id: string): Promise<void> {
+  // Получаем рекламный блок перед удалением, чтобы удалить файл
+  const ad = await prisma.ad.findUnique({
+    where: { id },
+    select: { imageUrl: true },
+  });
+
+  if (ad && ad.imageUrl) {
+    // Удаляем файл изображения
+    deleteAdImage(ad.imageUrl);
+  }
+
+  // Удаляем запись из БД
   await prisma.ad.delete({
     where: { id },
   });

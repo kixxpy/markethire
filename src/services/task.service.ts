@@ -2,6 +2,8 @@ import { prisma } from "../lib/prisma";
 import { CreateTaskInput, UpdateTaskInput, TaskFiltersInput } from "../lib/validation";
 import { Marketplace, TaskStatus, BudgetType, UserRole } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import { deleteTaskImages } from "./file.service";
+import { createNotification } from "./notification.service";
 
 /**
  * Общие include для задач с отношениями
@@ -478,7 +480,13 @@ export async function updateTask(
   if (data.marketplace !== undefined) {
     // Убеждаемся, что marketplace - это массив
     if (Array.isArray(data.marketplace) && data.marketplace.length > 0) {
-      updateData.marketplace = data.marketplace;
+      // Валидация значений enum
+      const validMarketplaces: Marketplace[] = ['WB', 'OZON', 'YANDEX_MARKET', 'LAMODA'];
+      const invalidValues = data.marketplace.filter(m => !validMarketplaces.includes(m as Marketplace));
+      if (invalidValues.length > 0) {
+        throw new Error(`Недопустимые значения маркетплейсов: ${invalidValues.join(', ')}`);
+      }
+      updateData.marketplace = data.marketplace as Marketplace[];
     } else {
       throw new Error("Необходимо выбрать хотя бы один маркетплейс");
     }
@@ -713,16 +721,39 @@ export async function deleteTask(taskId: string, userId: string, isAdmin: boolea
   const taskOwnerId = task.userId;
   const taskCreatedInMode = task.createdInMode;
   const taskTitle = task.title;
+  const taskImages = task.images || [];
 
-  await prisma.task.delete({
-    where: { id: taskId },
+  // Удаляем изображения задачи из файловой системы
+  if (taskImages.length > 0) {
+    try {
+      deleteTaskImages(taskImages);
+    } catch (error) {
+      console.error('Ошибка удаления изображений задачи:', error);
+      // Не прерываем выполнение, если удаление изображений не удалось
+    }
+  }
+
+  // Удаляем задачу и все связанные данные в транзакции
+  await prisma.$transaction(async (tx) => {
+    // 1. Удаляем связи задачи с тегами (TaskTag)
+    await tx.taskTag.deleteMany({
+      where: { taskId },
+    });
+
+    // 2. Удаляем отклики на задачу (Response)
+    await tx.response.deleteMany({
+      where: { taskId },
+    });
+
+    // 3. Удаляем задачу (TaskModerationHistory удалится автоматически благодаря onDelete: Cascade)
+    await tx.task.delete({
+      where: { id: taskId },
+    });
   });
 
   // Если задача удалена администратором, создаем уведомление владельцу
   if (isAdmin && taskOwnerId !== userId) {
     try {
-      const { createNotification } = await import('./notification.service');
-      
       // Определяем роль для уведомления на основе createdInMode
       const notificationRole = taskCreatedInMode === 'PERFORMER' ? 'PERFORMER' : 'SELLER';
 

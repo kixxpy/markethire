@@ -144,14 +144,74 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
   const onSubmit = async (data: TaskFormData) => {
     try {
       if (taskId) {
-        // При обновлении: разделяем изображения на загруженные и новые
-        const uploadedImages = images.filter(img => img.startsWith('/uploads/tasks/'));
+        // Сначала обновляем задачу с текущим состоянием images
+        // Это удалит изображения из БД, если они были удалены локально
+        await api.patch(`/api/tasks/${taskId}`, {
+          ...data,
+          images: images, // Используем текущее состояние, которое уже содержит правильный список
+        });
+        
+        // После обновления задачи разделяем изображения на загруженные и новые
         const newImages = images.filter(img => img.startsWith('data:'));
 
         // Загружаем новые изображения, если они есть
         if (newImages.length > 0) {
+          // Проверяем, что после обновления задачи у нас есть место для новых изображений
+          const existingImages = images.filter(img => !img.startsWith('data:'));
+          const availableSlots = 3 - existingImages.length;
+          
+          if (availableSlots <= 0) {
+            toast.warning('Максимум 3 изображения на задачу. Удалите существующие изображения, чтобы добавить новые.');
+          } else {
+            const imagesToUpload = newImages.slice(0, availableSlots);
+            const formData = new FormData();
+            
+            for (let i = 0; i < imagesToUpload.length; i++) {
+              const imageUrl = imagesToUpload[i];
+              const blob = dataURItoBlob(imageUrl);
+              const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
+              formData.append('images', file);
+            }
+
+            try {
+              const uploadResponse = await api.post<{ images: string[] }>(`/api/tasks/${taskId}/images`, formData);
+              // Обновляем состояние images с ответом сервера
+              if (uploadResponse.images) {
+                setImages(uploadResponse.images);
+              }
+            } catch (error: any) {
+              console.error('Ошибка загрузки изображений:', error);
+              toast.error(error.message || 'Ошибка загрузки новых изображений');
+            }
+          }
+        }
+        
+        toast.success('Задача обновлена');
+      } else {
+        // При создании: создаем задачу, затем загружаем изображения
+        // Исключаем images из data, чтобы избежать попадания data URLs в БД
+        const { images: _, ...dataWithoutImages } = data;
+        const taskData: any = {
+          ...dataWithoutImages,
+          createdInMode: activeMode || 'SELLER',
+        };
+        // Не отправляем data URLs при создании задачи
+        // Они будут загружены отдельно через API загрузки изображений
+        // Отправляем только уже загруженные URL (если есть)
+        const uploadedImages = images.filter(img => !img.startsWith('data:'));
+        if (uploadedImages.length > 0) {
+          taskData.images = uploadedImages;
+        }
+        const response = await api.post<{ task: { id: string } }>('/api/tasks', taskData);
+
+        const newTaskId = response.task.id;
+
+        // Загружаем только новые изображения (data URLs), если они есть
+        const newImages = images.filter(img => img.startsWith('data:'));
+        if (newImages.length > 0) {
           const formData = new FormData();
           
+          // Конвертируем data URL в файлы для загрузки
           for (let i = 0; i < newImages.length; i++) {
             const imageUrl = newImages[i];
             const blob = dataURItoBlob(imageUrl);
@@ -160,70 +220,10 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
           }
 
           try {
-            const uploadResponse = await api.post<{ images: string[] }>(`/api/tasks/${taskId}/images`, formData);
-            // Используем полный список изображений из ответа API
-            const allImages = uploadResponse.images;
-            
-            // Обновляем задачу с полным списком изображений
-            await api.patch(`/api/tasks/${taskId}`, {
-              ...data,
-              images: allImages,
-            });
+            await api.post(`/api/tasks/${newTaskId}/images`, formData);
           } catch (error) {
             console.error('Ошибка загрузки изображений:', error);
-            // Обновляем задачу без новых изображений
-            await api.patch(`/api/tasks/${taskId}`, {
-              ...data,
-              images: uploadedImages,
-            });
-            toast.warning('Задача обновлена, но не все изображения загружены');
-            return;
-          }
-        } else {
-          // Если новых изображений нет, просто обновляем задачу со всеми изображениями
-          await api.patch(`/api/tasks/${taskId}`, {
-            ...data,
-            images: images, // Используем все изображения (могут быть удалены некоторые)
-          });
-        }
-        
-        toast.success('Задача обновлена');
-      } else {
-        // При создании: создаем задачу, затем загружаем изображения
-        const taskData: any = {
-          ...data,
-          createdInMode: activeMode || 'SELLER',
-        };
-        // Не отправляем images, если массив пустой (валидатор ожидает либо undefined, либо массив с URL)
-        if (images.length > 0) {
-          taskData.images = images;
-        }
-        const response = await api.post<{ task: { id: string } }>('/api/tasks', taskData);
-
-        const newTaskId = response.task.id;
-
-        // Загружаем изображения, если они есть
-        if (images.length > 0) {
-          const formData = new FormData();
-          
-          // Конвертируем data URL в файлы для загрузки
-          for (let i = 0; i < images.length; i++) {
-            const imageUrl = images[i];
-            if (imageUrl.startsWith('data:')) {
-              // Это локальное превью, нужно загрузить
-              const blob = dataURItoBlob(imageUrl);
-              const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
-              formData.append('images', file);
-            }
-          }
-
-          if (formData.has('images')) {
-            try {
-              await api.post(`/api/tasks/${newTaskId}/images`, formData);
-            } catch (error) {
-              console.error('Ошибка загрузки изображений:', error);
-              toast.warning('Задача создана, но не все изображения загружены');
-            }
+            toast.warning('Задача создана, но не все изображения загружены');
           }
         }
 

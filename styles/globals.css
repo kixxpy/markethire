@@ -112,3 +112,26 @@
     background: linear-gradient(135deg, hsl(var(--gradient-dark-from)), hsl(var(--gradient-dark-to)));
   }
 }
+
+/* Стили для прозрачного фона toast-уведомлений */
+[data-sonner-toast] {
+  background: hsl(var(--card) / 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  color: hsl(var(--card-foreground));
+}
+
+.dark [data-sonner-toast] {
+  background: hsl(var(--card) / 0.95) !important;
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* Стили для кнопки закрытия */
+[data-sonner-toast] [data-close-button] {
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1;
+}

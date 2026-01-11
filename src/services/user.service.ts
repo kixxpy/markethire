@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma";
 import { hashPassword, verifyPassword, generateToken, generateTokenPair } from "../lib/auth";
 import { RegisterInput, LoginInput, UpdateProfileInput } from "../lib/validation";
 import { UserRole } from "@prisma/client";
+import { deleteAvatar } from "./file.service";
 
 export interface AuthResult {
   user: {
@@ -173,6 +174,18 @@ export async function updateUserProfile(
 
     if (existingUser && existingUser.id !== userId) {
       throw new Error("Пользователь с таким никнеймом уже существует");
+    }
+  }
+
+  // Если avatarUrl устанавливается в null или пустую строку, удаляем файл
+  if (data.avatarUrl === null || data.avatarUrl === '') {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarUrl: true },
+    });
+    
+    if (currentUser?.avatarUrl) {
+      deleteAvatar(currentUser.avatarUrl);
     }
   }
 

@@ -101,7 +101,7 @@ export function NotificationCenter() {
       if (activeMode) {
         queryParams.append('role', activeMode);
       }
-      queryParams.append('unreadOnly', 'false');
+      queryParams.append('unreadOnly', 'true');
       const data = await api.get<NotificationResponse>(
         `/api/notifications?${queryParams.toString()}`
       );
@@ -128,9 +128,8 @@ export function NotificationCenter() {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await api.patch(`/api/notifications/${notificationId}/read`);
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
+      // Удаляем уведомление из списка, так как оно теперь прочитано
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Ошибка обновления уведомления:', error);
@@ -140,7 +139,8 @@ export function NotificationCenter() {
   const handleMarkAllAsRead = async () => {
     try {
       await api.post('/api/notifications/read-all', { role: activeMode });
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      // Очищаем список уведомлений, так как все теперь прочитаны
+      setNotifications([]);
       setUnreadCount(0);
     } catch (error) {
       console.error('Ошибка обновления уведомлений:', error);
