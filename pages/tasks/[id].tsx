@@ -222,7 +222,7 @@ export default function TaskDetailPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-4">
                 <CardTitle className="text-2xl">{task.title}</CardTitle>
@@ -243,7 +243,7 @@ export default function TaskDetailPage() {
               </div>
             </div>
             {(isOwner || isAdmin) && (
-              <div className="flex gap-2">
+              <div className={styles.actionsContainer}>
                 {isOwner && task.status === 'OPEN' && (
                   <Button variant="outline" asChild>
                     <Link href={`/tasks/${task.id}/edit`}>Редактировать</Link>
