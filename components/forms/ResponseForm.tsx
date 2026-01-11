@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createResponseSchema } from '../../src/lib/validation';
 import { api } from '../../src/api/client';
 import { useRouter } from 'next/router';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -79,6 +79,9 @@ export default function ResponseForm({ taskId, onSuccess }: ResponseFormProps) {
                   onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                 />
               </FormControl>
+              <FormDescription>
+                Указание цены необязательно
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

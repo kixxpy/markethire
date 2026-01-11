@@ -335,7 +335,7 @@ export async function updateResponse(
 }
 
 /**
- * Удаление отклика
+ * Удаление отклика (автор или владелец задачи)
  */
 export async function deleteResponse(
   responseId: string,
@@ -347,6 +347,7 @@ export async function deleteResponse(
     include: {
       task: {
         select: {
+          userId: true,
           status: true,
         },
       },
@@ -357,8 +358,11 @@ export async function deleteResponse(
     throw new Error("Отклик не найден");
   }
 
-  // Проверка прав доступа (только автор может удалить)
-  if (existingResponse.userId !== userId) {
+  // Проверка прав доступа (автор или владелец задачи может удалить)
+  const isAuthor = existingResponse.userId === userId;
+  const isTaskOwner = existingResponse.task.userId === userId;
+
+  if (!isAuthor && !isTaskOwner) {
     throw new Error("Недостаточно прав для удаления отклика");
   }
 

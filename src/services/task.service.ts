@@ -935,9 +935,14 @@ export async function getMyTasks(
 }
 
 /**
- * Получение откликов на задачу
+ * Получение откликов на задачу с пагинацией
  */
-export async function getTaskResponses(taskId: string, userId?: string) {
+export async function getTaskResponses(
+  taskId: string,
+  userId?: string,
+  page: number = 1,
+  limit: number = 10
+) {
   // Проверка существования задачи
   const task = await prisma.task.findUnique({
     where: { id: taskId },
@@ -956,26 +961,92 @@ export async function getTaskResponses(taskId: string, userId?: string) {
     throw new Error("Недостаточно прав для просмотра откликов");
   }
 
-  const responses = await prisma.response.findMany({
-    where: { taskId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          description: true,
-          priceFrom: true,
+  const skip = (page - 1) * limit;
+
+  // Пытаемся получить отклики с replies
+  let responses;
+  try {
+    responses = await prisma.response.findMany({
+      where: { taskId },
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            email: true,
+            description: true,
+            priceFrom: true,
+          },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+      orderBy: {
+        createdAt: "desc", // Самый свежий сверху
+      },
+    });
+  } catch (error: any) {
+    // Если ошибка связана с replies (таблица не существует), получаем без них
+    console.warn("Не удалось загрузить replies, загружаем без них:", error.message);
+    responses = await prisma.response.findMany({
+      where: { taskId },
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            email: true,
+            description: true,
+            priceFrom: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    // Добавляем пустой массив replies к каждому отклику
+    responses = responses.map((r: any) => ({ ...r, replies: [] }));
+  }
+
+  const total = await prisma.response.count({
+    where: { taskId },
   });
 
-  return responses;
+  return {
+    responses,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+
+  return {
+    responses,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 }
 
 /**

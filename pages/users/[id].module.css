@@ -1,25 +1,317 @@
 /* Стили для страницы профиля пользователя */
 
-/* Адаптивность для мобильных устройств */
-@media (max-width: 767px) {
+.container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.profileCard {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.profileHeader {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+}
+
+.profileInfo {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.profileTitleRow {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.profileTitle {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.editButton {
+  flex-shrink: 0;
+}
+
+.description {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.priceFrom {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.priceValue {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.tags {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.separator {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.contacts {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.contactsTitle {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.contactsList {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.contactItem {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+.contactText {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-width: 0;
+}
+
+.tabs {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: auto;
+}
+
+.tabButtonActive {
+  border-bottom-width: 2px;
+}
+
+.tasksGrid {
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .tasksGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Адаптивность для планшетов */
+/* Tablet (768px - 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
+
+  .tasksGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* Адаптивность для десктопов */
-@media (min-width: 1024px) {
+/* Mobile (до 767px) */
+@media (max-width: 767px) {
   .container {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .content {
+    gap: 1rem;
+  }
+
+  .profileCard {
+    padding: 1rem !important;
+  }
+
+  .profileHeader {
+    gap: 1rem;
+  }
+
+  .avatar {
+    width: 5rem !important;
+    height: 5rem !important;
+  }
+
+  .avatarFallback {
+    font-size: 1.5rem !important;
+  }
+
+  .profileTitle {
+    font-size: 1.5rem !important;
+    line-height: 1.3;
+  }
+
+  .description {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .priceValue {
+    font-size: 1.125rem !important;
+  }
+
+  .contactsTitle {
+    font-size: 1.125rem !important;
+    margin-bottom: 0.75rem;
+  }
+
+  .contactText {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .separator {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .tasksGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .tabs {
+    gap: 0.5rem;
+  }
+
+  .tabButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Small Mobile (до 480px) */
+@media (max-width: 479px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .content {
+    gap: 0.75rem;
+  }
+
+  .profileCard {
+    padding: 0.75rem !important;
+  }
+
+  .profileHeader {
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 4rem !important;
+    height: 4rem !important;
+  }
+
+  .avatarFallback {
+    font-size: 1.25rem !important;
+  }
+
+  .profileTitle {
+    font-size: 1.25rem !important;
+    line-height: 1.2;
+  }
+
+  .description {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .priceValue {
+    font-size: 1rem !important;
+  }
+
+  .contactsTitle {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .contactText {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .separator {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .tasksGrid {
+    gap: 0.75rem;
+  }
+
+  .tabButton {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
   }
 }

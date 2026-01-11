@@ -433,17 +433,24 @@
   }
 
   .cardContent {
-    padding: 12px;
+    padding: 10px;
     width: 100%;
     max-width: 100%;
+    gap: 10px;
   }
 
   .imageContainer {
-    height: 180px;
+    height: 160px;
+    width: 100%;
   }
 
   .title {
     font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .descriptionText {
+    font-size: 13px;
   }
 
   .moderationPending,
@@ -461,10 +468,28 @@
   .navButton {
     width: 28px;
     height: 28px;
+    opacity: 1;
   }
 
   .navIcon {
     width: 16px;
     height: 16px;
+  }
+
+  .badges {
+    gap: 4px;
+  }
+
+  .footer {
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .userName {
+    font-size: 13px;
+  }
+
+  .date {
+    font-size: 11px;
   }
 }

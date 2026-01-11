@@ -66,7 +66,7 @@ export default function UserProfilePage() {
   const { user: currentUser, isAuthenticated } = useAuthStore();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TaskTab>(null);
+  const [activeTab, setActiveTab] = useState<TaskTab>('orders');
   const [orders, setOrders] = useState<PaginatedTasks | null>(null);
   const [services, setServices] = useState<PaginatedTasks | null>(null);
   const [loadingTasks, setLoadingTasks] = useState(false);
@@ -167,29 +167,29 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className={`container mx-auto px-4 py-8 sm:px-6 lg:px-8 ${styles.container}`}>
+      <div className={`max-w-4xl mx-auto space-y-6 ${styles.content}`}>
         {/* Заголовок профиля */}
         <Card>
-          <CardContent className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-              <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
+          <CardContent className={`p-6 sm:p-8 ${styles.profileCard}`}>
+            <div className={`flex flex-col sm:flex-row gap-6 items-start sm:items-center ${styles.profileHeader}`}>
+              <Avatar className={`h-24 w-24 sm:h-32 sm:w-32 ${styles.avatar}`}>
                 {user.avatarUrl && (
                   <AvatarImage src={user.avatarUrl} alt={getDisplayName(user.username, user.email)} />
                 )}
-                <AvatarFallback className="text-2xl sm:text-3xl">
+                <AvatarFallback className={`text-2xl sm:text-3xl ${styles.avatarFallback}`}>
                   {getDisplayName(user.username, user.email).charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <h1 className="text-2xl sm:text-3xl font-bold">
+              <div className={`flex-1 min-w-0 ${styles.profileInfo}`}>
+                <div className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ${styles.profileTitleRow}`}>
+                  <h1 className={`text-2xl sm:text-3xl font-bold ${styles.profileTitle}`}>
                     {getDisplayName(user.username, user.email)}
                   </h1>
                   {isOwner && (
                     <Link href="/profile">
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                      <Button variant="outline" size="sm" className={`w-full sm:w-auto ${styles.editButton}`}>
                         <Edit className="h-4 w-4 mr-2" />
                         Редактировать
                       </Button>
@@ -198,22 +198,22 @@ export default function UserProfilePage() {
                 </div>
                 
                 {user.description && (
-                  <p className="text-muted-foreground mt-2 whitespace-pre-wrap">
+                  <p className={`text-muted-foreground mt-2 whitespace-pre-wrap ${styles.description}`}>
                     {user.description}
                   </p>
                 )}
 
                 {user.priceFrom && (
-                  <div className="mt-4">
+                  <div className={`mt-4 ${styles.priceFrom}`}>
                     <span className="text-sm text-muted-foreground">Цена от: </span>
-                    <span className="text-xl font-semibold">
+                    <span className={`text-xl font-semibold ${styles.priceValue}`}>
                       {user.priceFrom.toLocaleString('ru-RU')} ₽
                     </span>
                   </div>
                 )}
 
                 {user.tags && user.tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className={`mt-4 flex flex-wrap gap-2 ${styles.tags}`}>
                     {user.tags.map((userTag, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
                         {userTag.tag.name}
@@ -224,32 +224,32 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            <Separator className="my-6" />
+            <Separator className={`my-6 ${styles.separator}`} />
 
             {/* Контакты */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Контакты</h2>
-              <div className="space-y-2 text-foreground">
+            <div className={styles.contacts}>
+              <h2 className={`text-xl font-semibold mb-4 ${styles.contactsTitle}`}>Контакты</h2>
+              <div className={`space-y-2 text-foreground ${styles.contactsList}`}>
                 {user.telegram && (
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 ${styles.contactItem}`}>
                     <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                    <span>
+                    <span className={styles.contactText}>
                       <span className="font-medium">Telegram:</span> {user.telegram}
                     </span>
                   </div>
                 )}
                 {user.whatsapp && (
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 ${styles.contactItem}`}>
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>
+                    <span className={styles.contactText}>
                       <span className="font-medium">WhatsApp:</span> {user.whatsapp}
                     </span>
                   </div>
                 )}
                 {user.emailContact && (
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 ${styles.contactItem}`}>
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>
+                    <span className={styles.contactText}>
                       <span className="font-medium">Email:</span> {user.emailContact}
                     </span>
                   </div>
@@ -263,12 +263,12 @@ export default function UserProfilePage() {
         </Card>
 
         {/* Вкладки для заказов и услуг */}
-        <div className="flex gap-2 border-b">
+        <div className={`flex gap-2 border-b ${styles.tabs}`}>
           <button
             onClick={() => handleTabChange('orders')}
-            className={`px-4 py-2 font-medium text-sm transition-colors ${
+            className={`px-4 py-2 font-medium text-sm transition-colors ${styles.tabButton} ${
               activeTab === 'orders'
-                ? 'border-b-2 border-primary text-primary'
+                ? `${styles.tabButtonActive} border-b-2 border-primary text-primary`
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -276,9 +276,9 @@ export default function UserProfilePage() {
           </button>
           <button
             onClick={() => handleTabChange('services')}
-            className={`px-4 py-2 font-medium text-sm transition-colors ${
+            className={`px-4 py-2 font-medium text-sm transition-colors ${styles.tabButton} ${
               activeTab === 'services'
-                ? 'border-b-2 border-primary text-primary'
+                ? `${styles.tabButtonActive} border-b-2 border-primary text-primary`
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -290,7 +290,7 @@ export default function UserProfilePage() {
         {activeTab === 'orders' && (
           <div className="space-y-4">
             {loadingTasks ? (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className={`grid gap-4 ${styles.tasksGrid}`}>
                 {[1, 2].map((i) => (
                   <Card key={i}>
                     <CardContent className="p-6">
@@ -302,7 +302,7 @@ export default function UserProfilePage() {
               </div>
             ) : orders && orders.tasks.length > 0 ? (
               <>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className={`grid gap-4 ${styles.tasksGrid}`}>
                   {orders.tasks.map((task) => (
                     <TaskCard key={task.id} task={task} />
                   ))}
@@ -328,7 +328,7 @@ export default function UserProfilePage() {
         {activeTab === 'services' && (
           <div className="space-y-4">
             {loadingTasks ? (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className={`grid gap-4 ${styles.tasksGrid}`}>
                 {[1, 2].map((i) => (
                   <Card key={i}>
                     <CardContent className="p-6">
@@ -340,7 +340,7 @@ export default function UserProfilePage() {
               </div>
             ) : services && services.tasks.length > 0 ? (
               <>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className={`grid gap-4 ${styles.tasksGrid}`}>
                   {services.tasks.map((task) => (
                     <TaskCard key={task.id} task={task} />
                   ))}

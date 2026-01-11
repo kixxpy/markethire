@@ -15,9 +15,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     if (req.method === "GET") {
       // Получение откликов на задачу (только для владельца задачи)
       const userId = req.user?.userId;
-      const responses = await getTaskResponses(id, userId);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
 
-      return res.status(200).json(responses);
+      const data = await getTaskResponses(id, userId, page, limit);
+
+      return res.status(200).json(data);
     }
 
     if (req.method === "POST") {
@@ -65,7 +68,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
 
     console.error("Ошибка работы с откликами:", error);
-    return res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    console.error("Stack trace:", error.stack);
+    return res.status(500).json({ 
+      error: "Внутренняя ошибка сервера",
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
 

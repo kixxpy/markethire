@@ -114,168 +114,168 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
   return (
     <div className="w-full">
       <Card className={styles.card}>
-        <Link href={`/tasks/${task.id}`} className={styles.link}>
-          {/* Горизонтальная структура карточки */}
-          <div className={styles.cardContent}>
-            {/* Левая часть - изображение */}
-            {hasImages && (
-              <div className={styles.imageContainer}>
-                <div
-                  className={styles.imageWrapper}
-                  key={currentImageIndex}
+        <div className={styles.cardContent}>
+          {/* Левая часть - изображение */}
+          {hasImages && (
+            <Link href={`/tasks/${task.id}`} className={styles.imageContainer}>
+              <div
+                className={styles.imageWrapper}
+                key={currentImageIndex}
+              >
+                <Image
+                  src={images[currentImageIndex]}
+                  alt={task.title}
+                  fill
+                  className={styles.image}
+                  sizes="(max-width: 768px) 200px, 250px"
+                  loading={currentImageIndex === 0 ? "eager" : "lazy"}
+                  priority={currentImageIndex === 0}
+                />
+              </div>
+            
+            {/* Стрелки навигации */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={handlePreviousImage}
+                  className={styles.navButton}
+                  style={{ left: 8 }}
+                  aria-label="Предыдущее изображение"
                 >
-                  <Image
-                    src={images[currentImageIndex]}
-                    alt={task.title}
-                    fill
-                    className={styles.image}
-                    sizes="(max-width: 768px) 200px, 250px"
+                  <ChevronLeft className={styles.navIcon} />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className={styles.navButton}
+                  style={{ right: 8 }}
+                  aria-label="Следующее изображение"
+                >
+                  <ChevronRight className={styles.navIcon} />
+                </button>
+              </>
+            )}
+            
+            {/* Индикаторы изображений (точки) */}
+            {images.length > 1 && (
+              <div className={styles.imageIndicators}>
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                    className={cn(
+                      styles.indicator,
+                      index === currentImageIndex && styles.indicatorActive
+                    )}
+                    aria-label={`Изображение ${index + 1}`}
                   />
-                </div>
-              
-              {/* Стрелки навигации */}
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={handlePreviousImage}
-                    className={styles.navButton}
-                    style={{ left: 8 }}
-                    aria-label="Предыдущее изображение"
-                  >
-                    <ChevronLeft className={styles.navIcon} />
-                  </button>
-                  <button
-                    onClick={handleNextImage}
-                    className={styles.navButton}
-                    style={{ right: 8 }}
-                    aria-label="Следующее изображение"
-                  >
-                    <ChevronRight className={styles.navIcon} />
-                  </button>
-                </>
-              )}
-              
-              {/* Индикаторы изображений (точки) */}
-              {images.length > 1 && (
-                <div className={styles.imageIndicators}>
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCurrentImageIndex(index);
-                      }}
-                      className={cn(
-                        styles.indicator,
-                        index === currentImageIndex && styles.indicatorActive
-                      )}
-                      aria-label={`Изображение ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
+          </Link>
           )}
 
           {/* Правая часть - информация */}
           <div className={styles.infoContainer}>
-            <div className={styles.header}>
-              <div className={styles.titleRow}>
-                <h3 className={styles.title}>
-                  {task.title}
-                </h3>
-                {moderationStatusInfo && (
-                  <Badge 
-                    variant="outline" 
-                    className={moderationStatusInfo.className}
-                  >
-                    {moderationStatusInfo.text}
-                  </Badge>
-                )}
-              </div>
-              <div className={styles.badges}>
-                {task.marketplace.map((mp) => (
-                  <Badge 
-                    key={mp}
-                    variant="outline" 
-                    className={`${marketplaceColors[mp]} font-medium text-xs`}
-                  >
-                    {marketplaceLabels[mp]}
-                  </Badge>
-                ))}
-                {task.tags.slice(0, 3).map((tag) => (
-                  <Badge 
-                    key={tag.id} 
-                    variant="secondary" 
-                    className="text-xs font-normal"
-                  >
-                    {tag.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
-            <div className={styles.description}>
-              <p className={styles.descriptionText}>
-                {task.description}
-              </p>
-            </div>
-            
-            <div className={styles.footer}>
-              <div className={styles.priceSection}>
-                {task.budget && (
-                  <span className={styles.price}>
-                    {formatPrice()}
-                  </span>
-                )}
+            <Link href={`/tasks/${task.id}`} className={styles.link}>
+              <div className={styles.header}>
+                <div className={styles.titleRow}>
+                  <h3 className={styles.title}>
+                    {task.title}
+                  </h3>
+                  {moderationStatusInfo && (
+                    <Badge 
+                      variant="outline" 
+                      className={moderationStatusInfo.className}
+                    >
+                      {moderationStatusInfo.text}
+                    </Badge>
+                  )}
+                </div>
+                <div className={styles.badges}>
+                  {task.marketplace.map((mp) => (
+                    <Badge 
+                      key={mp}
+                      variant="outline" 
+                      className={`${marketplaceColors[mp]} font-medium text-xs`}
+                    >
+                      {marketplaceLabels[mp]}
+                    </Badge>
+                  ))}
+                  {task.tags.slice(0, 3).map((tag) => (
+                    <Badge 
+                      key={tag.id} 
+                      variant="secondary" 
+                      className="text-xs font-normal"
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
               </div>
               
-              <div className={styles.userSection}>
-                <Link 
-                  href={`/users/${task.user.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className={styles.userInfoRow}
-                >
-                  <Avatar className={styles.avatar}>
-                    {task.user.avatarUrl && (
-                      <AvatarImage src={task.user.avatarUrl} alt={getDisplayName(task.user.username, task.user.email)} />
-                    )}
-                    <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                      {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className={styles.userName}>
-                    {getDisplayName(task.user.username, task.user.email)}
-                  </span>
-                  <span className={styles.date}>
-                    {new Date(task.createdAt).toLocaleDateString('ru-RU', {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </Link>
-                {isSellerMode ? (
-                  <Badge 
-                    variant="outline" 
-                    className="bg-muted text-muted-foreground border-border font-medium text-xs"
-                  >
-                    Заказчик
-                  </Badge>
-                ) : (
-                  <Badge 
-                    variant="outline" 
-                    className="bg-muted text-muted-foreground border-border font-medium text-xs"
-                  >
-                    Исполнитель
-                  </Badge>
-                )}
+              <div className={styles.description}>
+                <p className={styles.descriptionText}>
+                  {task.description}
+                </p>
               </div>
+              
+              <div className={styles.footer}>
+                <div className={styles.priceSection}>
+                  {task.budget && (
+                    <span className={styles.price}>
+                      {formatPrice()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+            
+            <div className={styles.userSection}>
+              <Link 
+                href={`/users/${task.user.id}`}
+                className={styles.userInfoRow}
+              >
+                <Avatar className={styles.avatar}>
+                  {task.user.avatarUrl && (
+                    <AvatarImage src={task.user.avatarUrl} alt={getDisplayName(task.user.username, task.user.email)} />
+                  )}
+                  <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
+                    {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className={styles.userName}>
+                  {getDisplayName(task.user.username, task.user.email)}
+                </span>
+                <span className={styles.date}>
+                  {new Date(task.createdAt).toLocaleDateString('ru-RU', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
+              </Link>
+              {isSellerMode ? (
+                <Badge 
+                  variant="outline" 
+                  className="bg-muted text-muted-foreground border-border font-medium text-xs"
+                >
+                  Заказчик
+                </Badge>
+              ) : (
+                <Badge 
+                  variant="outline" 
+                  className="bg-muted text-muted-foreground border-border font-medium text-xs"
+                >
+                  Исполнитель
+                </Badge>
+              )}
             </div>
           </div>
         </div>
-      </Link>
-    </Card>
+      </Card>
     </div>
   );
 }
