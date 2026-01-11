@@ -127,7 +127,6 @@ export const taskFiltersSchema = z.object({
 export const createResponseSchema = z.object({
   message: z.string().min(10, "Сообщение должно содержать минимум 10 символов"),
   price: z.number().int().positive("Цена должна быть положительным числом").optional(),
-  deadline: z.string().min(1, "Дедлайн обязателен").optional(),
 });
 
 /**

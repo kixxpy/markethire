@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 type ResponseFormData = {
   message: string;
   price?: number;
-  deadline?: string;
 };
 
 interface ResponseFormProps {
@@ -27,7 +26,6 @@ export default function ResponseForm({ taskId, onSuccess }: ResponseFormProps) {
     defaultValues: {
       message: '',
       price: undefined,
-      deadline: '',
     },
   });
 
@@ -66,45 +64,25 @@ export default function ResponseForm({ taskId, onSuccess }: ResponseFormProps) {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Предлагаемая цена (₽)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="deadline"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Срок выполнения</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    placeholder="Например: 3 дня"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Предлагаемая цена (₽)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button
           type="submit"
