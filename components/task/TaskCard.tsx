@@ -16,6 +16,7 @@ interface TaskCardProps {
     moderationStatus?: TaskModerationStatus;
     moderationComment?: string | null;
     createdInMode?: UserRole;
+    marketplace: Marketplace[]; // Изменено на массив
     user: {
       username?: string | null;
       name: string | null;
@@ -28,19 +29,24 @@ interface TaskCardProps {
     }>;
     images?: string[]; // Массив URL изображений (максимум 3)
   };
+  showModerationStatus?: boolean;
 }
 
 const marketplaceLabels: Record<Marketplace, string> = {
   WB: 'Wildberries',
   OZON: 'OZON',
+  YANDEX_MARKET: 'ЯндексМаркет',
+  LAMODA: 'Lamoda',
 };
 
 const marketplaceColors: Record<Marketplace, string> = {
   WB: 'bg-blue-100 text-blue-800 border-blue-200',
   OZON: 'bg-orange-100 text-orange-800 border-orange-200',
+  YANDEX_MARKET: 'bg-red-100 text-red-800 border-red-200',
+  LAMODA: 'bg-purple-100 text-purple-800 border-purple-200',
 };
 
-export default function TaskCard({ task }: TaskCardProps) {
+export default function TaskCard({ task, showModerationStatus = false }: TaskCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Определяем стили в зависимости от режима создания
@@ -73,9 +79,37 @@ export default function TaskCard({ task }: TaskCardProps) {
     return `${task.budget.toLocaleString('ru-RU')} ₽`;
   };
 
-  const getDuration = () => {
-    return '1 месяц';
+  // Функция для получения текста и стилей статуса модерации
+  const getModerationStatusInfo = () => {
+    const status = task.moderationStatus || 'PENDING';
+    
+    switch (status) {
+      case 'PENDING':
+        return {
+          text: 'На модерации',
+          className: styles.moderationPending,
+        };
+      case 'APPROVED':
+        return {
+          text: 'Активна',
+          className: styles.moderationApproved,
+        };
+      case 'REJECTED':
+        return {
+          text: 'Удалена',
+          className: styles.moderationRejected,
+        };
+      case 'REVISION':
+        return {
+          text: 'Требуется доработка',
+          className: styles.moderationRevision,
+        };
+      default:
+        return null;
+    }
   };
+
+  const moderationStatusInfo = showModerationStatus ? getModerationStatusInfo() : null;
 
   return (
     <Card className={styles.card}>
@@ -143,31 +177,29 @@ export default function TaskCard({ task }: TaskCardProps) {
           {/* Правая часть - информация */}
           <div className={styles.infoContainer}>
             <div className={styles.header}>
-              <h3 className={styles.title}>
-                {task.title}
-              </h3>
-              <div className={styles.badges}>
-                <Badge 
-                  variant="outline" 
-                  className={`${marketplaceColors[task.marketplace]} font-medium text-xs`}
-                >
-                  {marketplaceLabels[task.marketplace]}
-                </Badge>
-                {isSellerMode ? (
+              <div className={styles.titleRow}>
+                <h3 className={styles.title}>
+                  {task.title}
+                </h3>
+                {moderationStatusInfo && (
                   <Badge 
                     variant="outline" 
-                    className="bg-seller-primary/10 text-seller-primary border-seller-border font-medium text-xs"
+                    className={moderationStatusInfo.className}
                   >
-                    🟦 Продавец
-                  </Badge>
-                ) : (
-                  <Badge 
-                    variant="outline" 
-                    className="bg-executor-primary/10 text-executor-primary border-executor-border font-medium text-xs"
-                  >
-                    🟩 Исполнитель
+                    {moderationStatusInfo.text}
                   </Badge>
                 )}
+              </div>
+              <div className={styles.badges}>
+                {task.marketplace.map((mp) => (
+                  <Badge 
+                    key={mp}
+                    variant="outline" 
+                    className={`${marketplaceColors[mp]} font-medium text-xs`}
+                  >
+                    {marketplaceLabels[mp]}
+                  </Badge>
+                ))}
                 {task.tags.slice(0, 3).map((tag) => (
                   <Badge 
                     key={tag.id} 
@@ -193,29 +225,43 @@ export default function TaskCard({ task }: TaskCardProps) {
                     {formatPrice()}
                   </span>
                 )}
-                <span className={styles.duration}>
-                  {getDuration()}
-                </span>
               </div>
               
               <div className={styles.userSection}>
-                <Avatar className={styles.avatar}>
-                  {task.user.avatarUrl && (
-                    <AvatarImage src={task.user.avatarUrl} alt={getDisplayName(task.user.username, task.user.email)} />
-                  )}
-                  <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                    {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className={styles.userName}>
-                  {getDisplayName(task.user.username, task.user.email)}
-                </span>
-                <span className={styles.date}>
-                  {new Date(task.createdAt).toLocaleDateString('ru-RU', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </span>
+                <div className={styles.userInfoRow}>
+                  <Avatar className={styles.avatar}>
+                    {task.user.avatarUrl && (
+                      <AvatarImage src={task.user.avatarUrl} alt={getDisplayName(task.user.username, task.user.email)} />
+                    )}
+                    <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
+                      {getDisplayName(task.user.username, task.user.email).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className={styles.userName}>
+                    {getDisplayName(task.user.username, task.user.email)}
+                  </span>
+                  <span className={styles.date}>
+                    {new Date(task.createdAt).toLocaleDateString('ru-RU', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
+                </div>
+                {isSellerMode ? (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-muted text-muted-foreground border-border font-medium text-xs"
+                  >
+                    Заказчик
+                  </Badge>
+                ) : (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-muted text-muted-foreground border-border font-medium text-xs"
+                  >
+                    Исполнитель
+                  </Badge>
+                )}
               </div>
             </div>
           </div>

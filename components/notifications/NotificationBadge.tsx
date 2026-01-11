@@ -13,14 +13,11 @@ export function NotificationBadge({ role, className }: NotificationBadgeProps) {
   return (
     <Badge
       className={cn(
-        "text-xs font-medium",
-        isSeller
-          ? "bg-seller-primary/10 text-seller-primary border-seller-border"
-          : "bg-executor-primary/10 text-executor-primary border-executor-border",
+        "text-xs font-medium bg-muted text-muted-foreground border-border",
         className
       )}
     >
-      {isSeller ? '🟦 Seller' : '🟩 Executor'}
+      {isSeller ? 'Seller' : 'Executor'}
     </Badge>
   );
 }
