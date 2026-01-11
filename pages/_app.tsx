@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import "../styles/globals.css";
 import Layout from "../components/common/Layout";
 import { useAuthStore } from "../src/store/authStore";
@@ -59,6 +61,18 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     document.documentElement.classList.add(inter.variable);
     document.documentElement.classList.add(inter.className);
+  }, []);
+
+  // Инициализация AOS (Animate On Scroll)
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+      offset: 100,
+      delay: 0,
+      disable: false,
+    });
   }, []);
 
   useEffect(() => {

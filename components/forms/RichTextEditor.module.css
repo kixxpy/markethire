@@ -1,0 +1,132 @@
+.container {
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  background: hsl(var(--background));
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.3);
+  flex-wrap: wrap;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: hsl(var(--border));
+  margin: 0 4px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.active {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.editor {
+  min-height: 200px;
+}
+
+.editorContent {
+  padding: 12px;
+  min-height: 200px;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+.editorContent p {
+  margin: 0 0 8px 0;
+}
+
+.editorContent p:last-child {
+  margin-bottom: 0;
+}
+
+.editorContent ul,
+.editorContent ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.editorContent li {
+  margin: 4px 0;
+}
+
+.editorContent a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editorContent a:hover {
+  opacity: 0.8;
+}
+
+.editorContent strong {
+  font-weight: 600;
+}
+
+.editorContent em {
+  font-style: italic;
+}
+
+.editorContent s {
+  text-decoration: line-through;
+}
+
+.editorContent h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 16px 0 8px 0;
+}
+
+.editorContent h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 14px 0 6px 0;
+}
+
+.editorContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0 6px 0;
+}
+
+/* Placeholder для пустого редактора */
+.editorContent .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px;
+    gap: 2px;
+  }
+
+  .icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .editorContent {
+    padding: 10px;
+    min-height: 150px;
+    font-size: 13px;
+  }
+}

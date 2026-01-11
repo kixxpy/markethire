@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { 
   Briefcase, 
   ShoppingBag,
@@ -63,70 +64,49 @@ export function Footer() {
   ];
 
   return (
-    <footer className={cn(styles.footer, "border-t bg-background")}>
+    <motion.footer
+      className={cn(styles.footer, "border-t bg-background")}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
       <div className={cn(styles.container, "container mx-auto")}>
         <div className={styles.content}>
           {/* Логотип и описание */}
-          <div className={styles.brandSection}>
+          <motion.div
+            className={styles.brandSection}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <Logo size="md" className={styles.logo} />
             <p className={styles.description}>
               Площадка для поиска исполнителей задач по маркетплейсам. 
               Создавайте задачи или предлагайте свои услуги.
             </p>
-          </div>
+          </motion.div>
 
           {/* Основные ссылки */}
-          <div className={styles.linksSection}>
+          <motion.div
+            className={styles.linksSection}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <h3 className={styles.sectionTitle}>Разделы</h3>
             <ul className={styles.linksList}>
-              {mainLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={styles.link}
-                  >
-                    <span className={styles.linkIcon}>{link.icon}</span>
-                    <span>{link.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Информационные ссылки */}
-          <div className={styles.linksSection}>
-            <h3 className={styles.sectionTitle}>Информация</h3>
-            <ul className={styles.linksList}>
-              {infoLinks.map((link) => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className={styles.link}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Социальные сети */}
-          <div className={styles.linksSection}>
-            <h3 className={styles.sectionTitle}>Связь с нами</h3>
-            <ul className={styles.linksList}>
-              {socialLinks.map((link) => (
-                <li key={link.href + link.label}>
-                  {link.external ? (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.link}
-                    >
-                      <span className={styles.linkIcon}>{link.icon}</span>
-                      <span>{link.label}</span>
-                    </a>
-                  ) : (
+              {mainLinks.map((link, index) => (
+                <motion.li
+                  key={link.href}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                >
+                  <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                     <Link
                       href={link.href}
                       className={styles.link}
@@ -134,20 +114,104 @@ export function Footer() {
                       <span className={styles.linkIcon}>{link.icon}</span>
                       <span>{link.label}</span>
                     </Link>
-                  )}
-                </li>
+                  </motion.div>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
+
+          {/* Информационные ссылки */}
+          <motion.div
+            className={styles.linksSection}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h3 className={styles.sectionTitle}>Информация</h3>
+            <ul className={styles.linksList}>
+              {infoLinks.map((link, index) => (
+                <motion.li
+                  key={link.href + link.label}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
+                >
+                  <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
+                    <Link
+                      href={link.href}
+                      className={styles.link}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Социальные сети */}
+          <motion.div
+            className={styles.linksSection}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h3 className={styles.sectionTitle}>Связь с нами</h3>
+            <ul className={styles.linksList}>
+              {socialLinks.map((link, index) => (
+                <motion.li
+                  key={link.href + link.label}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, x: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.link}
+                      >
+                        <span className={styles.linkIcon}>{link.icon}</span>
+                        <span>{link.label}</span>
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className={styles.link}
+                      >
+                        <span className={styles.linkIcon}>{link.icon}</span>
+                        <span>{link.label}</span>
+                      </Link>
+                    )}
+                  </motion.div>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
         </div>
 
         {/* Копирайт */}
-        <div className={styles.copyright}>
+        <motion.div
+          className={styles.copyright}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
           <p className={styles.copyrightText}>
             © {currentYear} Markethire. Все права защищены.
           </p>
-        </div>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../src/store/authStore';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
@@ -93,28 +94,45 @@ export function Navbar() {
   ];
 
   return (
-    <nav className={cn(styles.navbar, "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60")}>
+    <motion.nav
+      className={cn(styles.navbar, "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60")}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className={cn(styles.container, "flex items-center justify-between")}>
         <div className={cn(styles.leftSection, "flex items-center min-w-0")}>
-          <Logo size="md" className={cn(styles.logo, "flex-shrink-0")} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Logo size="md" className={cn(styles.logo, "flex-shrink-0")} />
+          </motion.div>
           
           {/* Ссылки для шапки профиля - перенесены рядом с логотипом */}
           {profileHeaderLinks.length > 0 && (
             <div className="hidden md:flex items-center gap-1 lg:gap-2">
-              {profileHeaderLinks.map((link) => (
-                <Link
+              {profileHeaderLinks.map((link, index) => (
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                    isActive(link.href)
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 + 0.2, duration: 0.3 }}
                 >
-                  <span className="flex-shrink-0">{link.icon}</span>
-                  <span className="hidden lg:inline truncate">{link.label}</span>
-                </Link>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                      isActive(link.href)
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <span className="flex-shrink-0">{link.icon}</span>
+                    <span className="hidden lg:inline truncate">{link.label}</span>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           )}
@@ -122,8 +140,14 @@ export function Navbar() {
           {/* Desktop / Tablet Navigation для остальных ссылок */}
           {navLinks.length > 0 && (
             <ul className={cn(styles.navLinks, "hidden md:flex items-center gap-1 lg:gap-2 flex-wrap max-w-full")}>
-              {navLinks.map((link) => (
-                <li key={link.href + link.label} className="flex-shrink-0">
+              {navLinks.map((link, index) => (
+                <motion.li
+                  key={link.href + link.label}
+                  className="flex-shrink-0"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
+                >
                   <Link
                     href={link.href}
                     className={cn(
@@ -136,13 +160,18 @@ export function Navbar() {
                     {link.icon && <span className="flex-shrink-0">{link.icon}</span>}
                     <span className="truncate">{link.label}</span>
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className={cn(styles.rightSection, "flex items-center")}>
+        <motion.div
+          className={cn(styles.rightSection, "flex items-center")}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4, duration: 0.3 }}
+        >
           {isAuthenticated ? (
             <>
               <ThemeToggle />
@@ -150,15 +179,20 @@ export function Navbar() {
               
               {/* Скрываем RoleSwitcher для администратора */}
               {user?.role !== 'ADMIN' && <RoleSwitcher />}
-              <Link
-                href="/profile"
-                className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
               >
-                <User className="h-4 w-4 flex-shrink-0" />
-                <span className="max-w-[140px] lg:max-w-[180px] truncate">
-                  {getDisplayName(user?.username ?? null, user?.email)}
-                </span>
-              </Link>
+                <Link
+                  href="/profile"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                >
+                  <User className="h-4 w-4 flex-shrink-0" />
+                  <span className="max-w-[140px] lg:max-w-[180px] truncate">
+                    {getDisplayName(user?.username ?? null, user?.email)}
+                  </span>
+                </Link>
+              </motion.div>
               <Button
                 variant="outline"
                 size="sm"
@@ -202,9 +236,9 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px]">
               <div className="flex flex-col gap-4 mt-6">
-                <Logo 
-                  size="md" 
-                  variant="minimal" 
+                <Logo
+                  size="md"
+                  variant="minimal"
                   onClick={() => setIsSheetOpen(false)}
                 />
                 {isAuthenticated && user?.role !== 'ADMIN' && (
@@ -212,7 +246,7 @@ export function Navbar() {
                     <RoleSwitcher />
                   </div>
                 )}
-                
+
                 {/* Ссылки для шапки профиля в мобильном меню */}
                 {profileHeaderLinks.length > 0 && (
                   <nav className="flex flex-col gap-2 pb-2 border-b">
@@ -285,13 +319,13 @@ export function Navbar() {
               </div>
             </SheetContent>
           </Sheet>
-        </div>
+        </motion.div>
       </div>
-      <AuthModal 
-        open={authModalOpen} 
+      <AuthModal
+        open={authModalOpen}
         onOpenChange={setAuthModalOpen}
         defaultMode={authModalMode}
       />
-    </nav>
+    </motion.nav>
   );
 }

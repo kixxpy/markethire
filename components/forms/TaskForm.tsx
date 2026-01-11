@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import TaskImageUpload from './TaskImageUpload';
+import RichTextEditor from './RichTextEditor';
 
 type TaskFormData = {
   marketplace: ('WB' | 'OZON' | 'YANDEX_MARKET' | 'LAMODA')[];
@@ -361,11 +362,11 @@ export default function TaskForm({ initialData, taskId }: TaskFormProps) {
             <FormItem>
               <FormLabel>Описание *</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Опишите задачу подробно"
-                  rows={6}
-                  {...field}
+                <RichTextEditor
                   value={field.value || ''}
+                  onChange={field.onChange}
+                  placeholder="Опишите задачу подробно"
+                  disabled={form.formState.isSubmitting}
                 />
               </FormControl>
               <FormMessage />

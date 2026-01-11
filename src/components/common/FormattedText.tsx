@@ -9,7 +9,20 @@ interface FormattedTextProps {
 export default function FormattedText({ text, className = '' }: FormattedTextProps) {
   if (!text) return null;
 
-  // Разбиваем текст на части: обычный текст и URL
+  // Проверяем, содержит ли текст HTML теги
+  const hasHTML = /<[^>]+>/.test(text);
+
+  if (hasHTML) {
+    // Если есть HTML, рендерим его безопасно
+    return (
+      <div 
+        className={`${styles.formattedText} ${className}`}
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+    );
+  }
+
+  // Иначе используем старую логику для обычного текста
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts: Array<{ type: 'text' | 'link'; content: string }> = [];
   let lastIndex = 0;

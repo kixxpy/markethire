@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Button } from '../ui/button';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
 import { toast } from 'sonner';
 import { api } from '../../src/api/client';
+import styles from './TaskImageUpload.module.css';
 
 interface TaskImageUploadProps {
   images: string[];
@@ -161,31 +161,31 @@ export default function TaskImageUpload({
   const canAddMore = previewImages.length < maxImages;
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Изображения (необязательно, максимум {maxImages})</label>
+    <div className={styles.container}>
+      <label className={styles.label}>Изображения (необязательно, максимум {maxImages})</label>
       
-      <div className="grid grid-cols-3 gap-4">
+      <div className={styles.grid}>
         {/* Существующие изображения */}
         {previewImages.map((imageUrl, index) => (
           <div
             key={`${imageUrl}-${index}`}
-            className="relative aspect-square rounded-lg overflow-hidden border border-input bg-muted group"
+            className={styles.imageContainer}
           >
             <Image
               src={imageUrl}
               alt={`Изображение ${index + 1}`}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 33vw"
             />
             {!disabled && (
               <button
                 type="button"
                 onClick={() => handleRemoveImage(index)}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                className={styles.removeButton}
                 aria-label="Удалить изображение"
               >
-                <X className="h-4 w-4" />
+                <X className={styles.icon} />
               </button>
             )}
           </div>
@@ -197,20 +197,17 @@ export default function TaskImageUpload({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className={cn(
-              "aspect-square rounded-lg border-2 border-dashed border-input bg-muted hover:bg-muted/80 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground",
-              uploading && "opacity-50 cursor-not-allowed"
-            )}
+            className={cn(styles.addButton, uploading && styles.addButtonDisabled)}
           >
             {uploading ? (
               <>
-                <Upload className="h-6 w-6 animate-pulse" />
-                <span className="text-xs">Загрузка...</span>
+                <Upload className={cn(styles.iconLarge, "animate-pulse")} />
+                <span className={styles.text}>Загрузка...</span>
               </>
             ) : (
               <>
-                <ImageIcon className="h-6 w-6" />
-                <span className="text-xs">Добавить</span>
+                <ImageIcon className={styles.iconLarge} />
+                <span className={styles.text}>Добавить</span>
               </>
             )}
           </button>
@@ -228,7 +225,7 @@ export default function TaskImageUpload({
       />
 
       {previewImages.length > 0 && (
-        <p className="text-xs text-muted-foreground">
+        <p className={styles.info}>
           Загружено {previewImages.length} из {maxImages} изображений
         </p>
       )}

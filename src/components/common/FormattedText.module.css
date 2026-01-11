@@ -3,6 +3,75 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  color: hsl(var(--foreground));
+}
+
+.formattedText p {
+  margin: 0 0 8px 0;
+}
+
+.formattedText p:last-child {
+  margin-bottom: 0;
+}
+
+.formattedText ul,
+.formattedText ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.formattedText li {
+  margin: 4px 0;
+}
+
+.formattedText a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+  word-break: break-all;
+}
+
+.formattedText a:hover {
+  color: hsl(var(--primary) / 0.8);
+  text-decoration-thickness: 2px;
+}
+
+.formattedText a:visited {
+  color: hsl(var(--primary) / 0.7);
+}
+
+.formattedText strong {
+  font-weight: 600;
+}
+
+.formattedText em {
+  font-style: italic;
+}
+
+.formattedText s {
+  text-decoration: line-through;
+}
+
+.formattedText h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 16px 0 8px 0;
+  line-height: 1.3;
+}
+
+.formattedText h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 14px 0 6px 0;
+  line-height: 1.3;
+}
+
+.formattedText h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0 6px 0;
+  line-height: 1.3;
 }
 
 .link {
@@ -26,5 +95,17 @@
   .formattedText {
     font-size: 0.95rem;
     line-height: 1.6;
+  }
+
+  .formattedText h1 {
+    font-size: 20px;
+  }
+
+  .formattedText h2 {
+    font-size: 18px;
+  }
+
+  .formattedText h3 {
+    font-size: 16px;
   }
 }

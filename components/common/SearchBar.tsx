@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../ui/input';
 import { Search, X } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -35,9 +36,19 @@ export default function SearchBar({
   };
 
   return (
-    <div className={`${styles.searchBar} ${className}`}>
+    <motion.div
+      className={`${styles.searchBar} ${className}`}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className={styles.searchWrapper}>
-        <Search className={styles.searchIcon} />
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Search className={styles.searchIcon} />
+        </motion.div>
         <Input
           type="text"
           value={localValue}
@@ -45,18 +56,27 @@ export default function SearchBar({
           placeholder={placeholder}
           className={styles.searchInput}
         />
-        {localValue && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            className={styles.clearButton}
-            aria-label="Очистить поиск"
-          >
-            <X className={styles.clearIcon} />
-          </Button>
-        )}
+        <AnimatePresence>
+          {localValue && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className={styles.clearButton}
+                aria-label="Очистить поиск"
+              >
+                <X className={styles.clearIcon} />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

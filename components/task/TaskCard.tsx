@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Task, Category, Marketplace, BudgetType, TaskModerationStatus, UserRole } from '@prisma/client';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -112,42 +113,67 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
   const moderationStatusInfo = showModerationStatus ? getModerationStatusInfo() : null;
 
   return (
-    <Card className={styles.card}>
-      <Link href={`/tasks/${task.id}`} className={styles.link}>
-        {/* Горизонтальная структура карточки */}
-        <div className={styles.cardContent}>
-          {/* Левая часть - изображение */}
-          {hasImages && (
-            <div className={styles.imageContainer}>
-              <div className={styles.imageWrapper}>
-                <Image
-                  src={images[currentImageIndex]}
-                  alt={task.title}
-                  fill
-                  className={styles.image}
-                  sizes="(max-width: 768px) 200px, 250px"
-                />
-              </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      whileHover={{ y: -4 }}
+      className="w-full"
+    >
+      <Card className={styles.card}>
+        <Link href={`/tasks/${task.id}`} className={styles.link}>
+          {/* Горизонтальная структура карточки */}
+          <div className={styles.cardContent}>
+            {/* Левая часть - изображение */}
+            {hasImages && (
+              <motion.div
+                className={styles.imageContainer}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  className={styles.imageWrapper}
+                  key={currentImageIndex}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Image
+                    src={images[currentImageIndex]}
+                    alt={task.title}
+                    fill
+                    className={styles.image}
+                    sizes="(max-width: 768px) 200px, 250px"
+                  />
+                </motion.div>
               
               {/* Стрелки навигации */}
               {images.length > 1 && (
                 <>
-                  <button
+                  <motion.button
                     onClick={handlePreviousImage}
                     className={styles.navButton}
                     style={{ left: 8 }}
                     aria-label="Предыдущее изображение"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                   >
                     <ChevronLeft className={styles.navIcon} />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     onClick={handleNextImage}
                     className={styles.navButton}
                     style={{ right: 8 }}
                     aria-label="Следующее изображение"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                   >
                     <ChevronRight className={styles.navIcon} />
-                  </button>
+                  </motion.button>
                 </>
               )}
               
@@ -155,7 +181,7 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
               {images.length > 1 && (
                 <div className={styles.imageIndicators}>
                   {images.map((_, index) => (
-                    <button
+                    <motion.button
                       key={index}
                       onClick={(e) => {
                         e.preventDefault();
@@ -167,11 +193,17 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
                         index === currentImageIndex && styles.indicatorActive
                       )}
                       aria-label={`Изображение ${index + 1}`}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      animate={{
+                        scale: index === currentImageIndex ? 1.2 : 1,
+                      }}
+                      transition={{ duration: 0.2 }}
                     />
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Правая часть - информация */}
@@ -268,5 +300,6 @@ export default function TaskCard({ task, showModerationStatus = false }: TaskCar
         </div>
       </Link>
     </Card>
+    </motion.div>
   );
 }

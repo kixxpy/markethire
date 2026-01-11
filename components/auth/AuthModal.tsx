@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -45,42 +46,73 @@ export function AuthModal({ open, onOpenChange, defaultMode = 'login' }: AuthMod
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {mode === 'login' ? 'Вход' : 'Регистрация'}
-          </DialogTitle>
-        </DialogHeader>
-        <Card className="border-0 shadow-none">
-          <CardContent className="p-0 pt-4">
-            {mode === 'login' ? (
-              <>
-                <LoginForm onSuccess={handleClose} />
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Нет аккаунта?{' '}
-                  <button
-                    onClick={switchToRegister}
-                    className="text-primary hover:underline font-medium"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+        >
+          <DialogHeader>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mode}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DialogTitle className="text-2xl">
+                  {mode === 'login' ? 'Вход' : 'Регистрация'}
+                </DialogTitle>
+              </motion.div>
+            </AnimatePresence>
+          </DialogHeader>
+          <Card className="border-0 shadow-none">
+            <CardContent className="p-0 pt-4">
+              <AnimatePresence mode="wait">
+                {mode === 'login' ? (
+                  <motion.div
+                    key="login"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    Зарегистрироваться
-                  </button>
-                </p>
-              </>
-            ) : (
-              <>
-                <RegisterForm onSuccess={handleClose} />
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Уже есть аккаунт?{' '}
-                  <button
-                    onClick={switchToLogin}
-                    className="text-primary hover:underline font-medium"
+                    <LoginForm onSuccess={handleClose} />
+                    <p className="text-center text-sm text-muted-foreground mt-4">
+                      Нет аккаунта?{' '}
+                      <button
+                        onClick={switchToRegister}
+                        className="text-primary hover:underline font-medium transition-colors"
+                      >
+                        Зарегистрироваться
+                      </button>
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="register"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    Войти
-                  </button>
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                    <RegisterForm onSuccess={handleClose} />
+                    <p className="text-center text-sm text-muted-foreground mt-4">
+                      Уже есть аккаунт?{' '}
+                      <button
+                        onClick={switchToLogin}
+                        className="text-primary hover:underline font-medium transition-colors"
+                      >
+                        Войти
+                      </button>
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
